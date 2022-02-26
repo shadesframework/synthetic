@@ -1,0 +1,15 @@
+{
+    "metaset" : {
+        "name" : {
+            "datatype" : "string",
+            "format" : { 
+                "randomPick" : ["peter", "john", "steve"], 
+            }
+        }
+    },
+    "storage" : {
+        "type" : "csv",
+        "pointer" : "/home/ec2-user/datagen",
+        "rows" : "100"
+    }
+}
