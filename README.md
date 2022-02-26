@@ -6,6 +6,7 @@ It supports relational data
 
 .synth files will have following json format
 
+```
 File <dataset1>.synth
 
 {
@@ -73,3 +74,5 @@ File <dataset1>.synth
         "rows" : "<rows>" // default 10
     }
 }
+
+```
