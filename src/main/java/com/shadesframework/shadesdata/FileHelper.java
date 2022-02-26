@@ -1,7 +1,9 @@
 package com.shadesframework.shadesdata;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -12,8 +14,12 @@ import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class FileHelper {
+
+    private static Logger logger = LogManager.getLogger(FileHelper.class);
 
     public static Collection<String> getResources(
         final Pattern pattern){
@@ -92,9 +98,16 @@ public class FileHelper {
     }
 
     public static String readFileContent(String fileWithPath) throws Exception {
-        byte[] encoded = Files.readAllBytes(Paths.get(fileWithPath));
-        String content = new String(encoded, StandardCharsets.UTF_8);
-        return content;
+        try {
+            byte[] encoded = Files.readAllBytes(Paths.get(fileWithPath));
+            String content = new String(encoded, StandardCharsets.UTF_8);
+            return content;
+        } catch(Exception e) {
+            InputStream stream = FileHelper.class.getClassLoader().getResourceAsStream(fileWithPath);
+            byte[] encoded = getBytes(stream);
+            String content = new String(encoded, StandardCharsets.UTF_8);
+            return content;
+        }
     }
 
     public static String getFileNameFromFullPath(String path) throws Exception {
@@ -104,5 +117,20 @@ public class FileHelper {
             fileName = fileName.substring(0, fileName.lastIndexOf("."));
         }
         return fileName;
+    }
+
+    public static byte[] getBytes(InputStream is) throws Exception {
+        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+
+        int nRead;
+        byte[] data = new byte[4];
+    
+        while ((nRead = is.read(data, 0, data.length)) != -1) {
+            buffer.write(data, 0, nRead);
+        }
+    
+        buffer.flush();
+        byte[] targetArray = buffer.toByteArray();
+        return targetArray;
     }
 }  

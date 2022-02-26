@@ -4,8 +4,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Set;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class DataSet {
+    private static Logger logger = LogManager.getLogger(DataSet.class);
+
     private Storage storageHelper;
     private Metadata metaDataReader;
     private String name;
@@ -13,7 +17,7 @@ public class DataSet {
     private HashMap<String, ArrayList> relatedSets;
     private HashMap<String, String> storage;
 
-    private HashMap<String, Object> generationContext;
+    private HashMap<String, Object> generationContext = new HashMap();
 
     ArrayList<HashMap> intermediateRows = new ArrayList();
     ArrayList<HashMap> generatedRows = new ArrayList();
@@ -26,6 +30,10 @@ public class DataSet {
             this.columns = columns;
             this.relatedSets = relatedSets;
             this.storage = storage;
+    }
+
+    public  ArrayList<HashMap> getGeneratedRows() {
+        return this.generatedRows;
     }
 
     public String getName() {
@@ -86,6 +94,7 @@ public class DataSet {
     private String getSpecificRelationParameter(DataSet relatedDataset, String relationParameter) throws Exception {
         ArrayList<String> wantedRelationType = 
         new ArrayList<String>( Arrays.asList("oneToOne", "oneToMany", "ManyToOne", "ManyToMany") );
+        logger.debug("relatedDataSet => "+relatedDataset);
         HashMap<String, String> relatedSetMeta = MetaDataHelper.getRelatedDataSetMetaData(relatedDataset.getName(), metaDataReader, relatedSets, wantedRelationType);
         if (relatedSetMeta != null) {
             String specicParameterValue = relatedSetMeta.get(relationParameter);
@@ -171,7 +180,12 @@ public class DataSet {
                     throw new Exception("format cannot be null for column ("+this.getName()+"."+columnName+")");
                 }
                 Object columnValue = null;
-                HashMap previousRow = (HashMap)generationContext.get("previousRow");
+                HashMap previousRow =null;
+
+                if (generationContext.containsKey("previousRow")) {
+                    previousRow = (HashMap)generationContext.get("previousRow");   
+                }
+
                 int tryGeneratingUniqueValueCount = 0;
                 boolean isValueGeneratedCorrecly = false;
                 if (dataType != null) {
@@ -190,16 +204,28 @@ public class DataSet {
                         } else {
                             // check if the value is not already generated for this column (being PK)
                             if (!this.isValueAlreadyPresentInPrimaryKey(columnName, columnValue)) {
+                                logger.debug("value not present in primary key from before");
                                 isValueGeneratedCorrecly = true;
                                 break;
+                            }
+                            else {
+                                logger.debug("value is present in primary key from before");
                             }
                         }
                         tryGeneratingUniqueValueCount++;
                     }
+                    logger.debug("isColumnPrimaryKey(columnName) => "+isColumnPrimaryKey(columnName));
+                    logger.debug("isValueGeneratedCorrecly => "+isValueGeneratedCorrecly);
                     if (this.isColumnPrimaryKey(columnName) && !isValueGeneratedCorrecly) {
+                        logger.debug("columnValue => "+columnValue);
+                        logger.debug("generatedRows => "+generatedRows);
+                        logger.error("unique value could not be generated for column ("+this.getName()+"."+columnName+")");
                         throw new Exception("unique value could not be generated for column ("+this.getName()+"."+columnName+")");
                     }
                     row.put(columnName, columnValue);
+                    if (this.isColumnPrimaryKey(columnName)) {
+                        submitPrimaryKeyForColumn(columnName, columnValue);
+                    }
                 }  else {
                     throw new Exception("dataType cannot be null for column ("+this.getName()+"."+columnName+")");
                 }
@@ -216,6 +242,7 @@ public class DataSet {
 
             ArrayList<DataSet> relatedDataSets = this.getRelatedDataSets();
             for (DataSet relatedDataSet : relatedDataSets) {
+                logger.debug("relatedDataSet => "+relatedDataSet);
                 String relationshipType = this.getRelationshipType(relatedDataSet);
                 if (relationshipType != null) {
                     int multiplicity = 0;
@@ -254,15 +281,26 @@ public class DataSet {
         return null;
     }
 
+    public void generateRows() throws Exception {
+        long rowsToGenerate = this.howManyRowsToGenerate();
+                
+        for (int i = 0 ; i < rowsToGenerate ; i++) {   
+            this.generateRow(null, null);
+        }
+    }
+
     public void storeRows() throws Exception {
         // to be implemented
     }
 
     private boolean isValueAlreadyPresentInPrimaryKey(String columnName, Object value) throws Exception {
         HashMap<String, ArrayList> generatedPrimaryKeys = (HashMap)this.generationContext.get("primaryKeys");
-        ArrayList primaryKeysForColumn = generatedPrimaryKeys.get(columnName);
-        if (primaryKeysForColumn.contains(value)) {
-            return true;
+        if (generatedPrimaryKeys != null) {
+            ArrayList primaryKeysForColumn = generatedPrimaryKeys.get(columnName);
+            logger.debug("primaryKeysForColumn => "+primaryKeysForColumn);
+            if (primaryKeysForColumn != null && primaryKeysForColumn.contains(value)) {
+                return true;
+            }
         }
         return false;
     }

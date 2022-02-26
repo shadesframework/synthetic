@@ -7,3 +7,4 @@ com/shadesframework/shadesdata/DataGenHelper.class
 com/shadesframework/shadesdata/FileHelper.class
 com/shadesframework/shadesdata/DataSet.class
 com/shadesframework/shadesdata/FileStorage.class
+com/shadesframework/shadesdata/CommonHelper.class

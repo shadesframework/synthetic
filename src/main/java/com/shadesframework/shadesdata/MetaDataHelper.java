@@ -4,13 +4,19 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.expression.EvaluationContext;
 import org.springframework.expression.Expression;
 import org.springframework.expression.ExpressionParser;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
 
+
 public class MetaDataHelper {
+    
+    private static Logger logger = LogManager.getLogger(MetaDataHelper.class);
+
     public static boolean keyDeterminant(String dataSetName, HashMap<String, HashMap> columnsMeta, String columnName, String keyType) throws Exception {
         
         if (columnName == null) {
@@ -76,12 +82,18 @@ public class MetaDataHelper {
     public static ArrayList<DataSet> getRelatedDataSets(Metadata metaDataReader, HashMap<String, ArrayList> relatedSets, ArrayList<String> wantedRelationType) throws Exception {
         ArrayList<DataSet> toReturn = new ArrayList();
         ArrayList<HashMap> relatedMetaSetList = getRelatedDataSetsMetaData(metaDataReader, relatedSets, wantedRelationType);
+        logger.debug("relatedMetaSetList => "+relatedMetaSetList);
         for (HashMap<String, String> relatedSetMeta : relatedMetaSetList) {
             String relatedDataSetName = relatedSetMeta.get("relatedDataset");
+            logger.debug("relatedDataSetName => "+relatedDataSetName);
             DataSet relatedDataSet = metaDataReader.getDataSet(relatedDataSetName);
-            toReturn.add(relatedDataSet);
+            if (relatedDataSet == null) {
+                logger.warn("related data set ("+relatedDataSetName+") not found");
+            } else {
+                toReturn.add(relatedDataSet);
+            }
         }
-
+        logger.debug("toReturn => "+toReturn);
         return toReturn;  
     }
 
@@ -113,9 +125,16 @@ public class MetaDataHelper {
     }
 
     public static Object getColumnFormatParameterValue(String parameter, HashMap format, HashMap row) throws Exception {
+        logger.debug("format => "+format);
         if (format != null && parameter != null) {
+            logger.debug("parameter => :"+parameter+":");
             Object value = format.get(parameter);
+            logger.debug("value => "+value);
             if (value instanceof Collection) {
+                if (CommonHelper.isCollectionOfType((Collection)value, "java.lang.String")) {
+                    logger.debug("collection is of type string");
+                    return value;
+                }
                 for (Map map : ((Collection<Map>)value)) {
                     String expression = ((HashMap<String, String>)map).get("expression");
                     Object expressionValue = evaluateExpression(expression, row);
@@ -128,7 +147,9 @@ public class MetaDataHelper {
                     }
                 }
             } else {
-                return value.toString();
+                if (value != null) {
+                    return value.toString();
+                }
             }
         }
         return null;

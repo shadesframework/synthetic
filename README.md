@@ -16,7 +16,9 @@ File <dataset1>.synth
             "format" : { 
                 // ***** for "number" datatype *****
                 "digitsBeforeDecimal" : "3",
-                "digitsAfterDecimal" : "4", // you can also specify parameter values that depend on other column values example below
+                "digitsAfterDecimal" : "4", 
+                
+                // you can also specify parameter values that depend on other column values example below
                 /****alternative example***/
                 "digitsAfterDecimal" : [{
                     "parameterValue" : "4" // digitsAfterDecimal should be 4 if dependentColumnName value is peter
