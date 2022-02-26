@@ -7,6 +7,7 @@ It supports relational data
 .synth files will have following json format
 
 File <dataset1>.synth
+
 {
     "metaset" : {
         "<columnName>" : { // specify columnName
@@ -45,26 +46,26 @@ File <dataset1>.synth
         }
     },
     "metarelations": {
-        "oneToOne" : {
+        "oneToOne" : [{
             "relatedDataset" : "<relatedDatasetName>",
             "relatedColumn" : "<columnName>" // this column needs to be primary key in "relatedDataset"
-        },
-        "oneToMany" : {
+        }],
+        "oneToMany" : [{
             "relatedDataset" : "<relatedDatasetName>",
             "relatedColumn" : "<columnName>" // this column needs to be foreign key in "relatedDataset",
             "multiplicityGuidance" : "3" // this needs to be given for related Many side. Eg, 3 rows will be generated for related 'many' side for each row generated for 'this' side
-        },
-        "ManyToOne" : {
+        }],
+        "ManyToOne" : [{
             "relatedDataset" : "<relatedDatasetName>",
             "relatedColumn" : "<columnName>" // this column needs to be primary key in "relatedDataset",
             "thisColumn" : <columnName> // this column needs to be foreign key in this dataset
-        },
-        "ManyToMany" : {
+        }],
+        "ManyToMany" : [{
             "relatedDataset" : "<relatedDatasetName>",
             "relatedColumn" : "<columnName>" // this column needs to be foreign key in "relatedDataset",
             "thisColumn" : <columnName> // this column needs to be foreign key in this dataset
             "multiplicityGuidance" : "3" // this needs to be given for related Many side. Eg, 3 rows will be generated for related 'many' side for each row generated for 'this' side
-        }
+        }]
     },
     "storage" : {
         "type" : // "json", "csv" (default), OR "db",

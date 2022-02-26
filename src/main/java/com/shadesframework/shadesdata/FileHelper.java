@@ -97,16 +97,12 @@ public class FileHelper {
         return content;
     }
 
-    public static void main(final String[] args){
-        Pattern pattern;
-        if(args.length < 1){
-            pattern = Pattern.compile(".*");
-        } else{
-            pattern = Pattern.compile(args[0]);
+    public static String getFileNameFromFullPath(String path) throws Exception {
+        File file = new File(path);
+        String fileName = file.getName();
+        if (fileName.indexOf(".") > 0) {
+            fileName = fileName.substring(0, fileName.lastIndexOf("."));
         }
-        final Collection<String> list = FileHelper.getResources(pattern);
-        for(final String name : list){
-            System.out.println(name);
-        }
+        return fileName;
     }
 }  

@@ -20,11 +20,11 @@ public class MetaDataHelper {
             throw new Exception("columns not set for dataset ("+dataSetName+")");
         }
         else {
-            HashMap<String, String> columnMeta = columnsMeta.get(columnName);
+            HashMap<String, Object> columnMeta = columnsMeta.get(columnName);
             if (columnMeta == null) {
                 throw new Exception("there is no meta data for this column ("+columnName+")");
             }
-            String assertion = columnMeta.get(keyType);
+            String assertion = (String)columnMeta.get(keyType);
             return convertToBoolean(assertion, false);
         }
     }
@@ -36,11 +36,11 @@ public class MetaDataHelper {
         }
         else {
             for (String columnName : columnsMeta.keySet()) {
-                HashMap<String, String> columnMeta = columnsMeta.get(columnName);
+                HashMap<String, Object> columnMeta = columnsMeta.get(columnName);
                 if (columnMeta == null) {
                     throw new Exception("there is no meta data for this column ("+columnName+")");
                 }
-                String assertion = columnMeta.get(keyType);
+                String assertion = (String)columnMeta.get(keyType);
                 if (convertToBoolean(assertion, false)) {
                     keys.add(columnName);
                 }
@@ -57,7 +57,7 @@ public class MetaDataHelper {
             throw new Exception("columns not set for dataset ("+dataSetName+")");
         }
         else {
-            HashMap<String, String> columnMeta = columnsMeta.get(columnName);
+            HashMap<String, Object> columnMeta = columnsMeta.get(columnName);
             if (columnMeta == null) {
                 throw new Exception("there is no meta data for this column ("+columnName+")");
             }

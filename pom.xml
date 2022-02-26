@@ -64,7 +64,7 @@
             <configuration>
               <transformers>
                 <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                  <mainClass>com.shadesframework.shadesdata.FileHelper</mainClass>
+                  <mainClass>com.shadesframework.shadesdata.GenerateSynthetic</mainClass>
                 </transformer>
               </transformers>
             </configuration>

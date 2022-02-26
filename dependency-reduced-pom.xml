@@ -19,7 +19,7 @@
             <configuration>
               <transformers>
                 <transformer>
-                  <mainClass>com.shadesframework.shadesdata.FileHelper</mainClass>
+                  <mainClass>com.shadesframework.shadesdata.GenerateSynthetic</mainClass>
                 </transformer>
               </transformers>
             </configuration>

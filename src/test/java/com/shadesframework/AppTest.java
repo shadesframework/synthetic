@@ -2,9 +2,6 @@ package com.shadesframework;
 
 import com.shadesframework.shadesdata.FileHelper;
 import com.shadesframework.shadesdata.FileMetadata;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -17,10 +14,7 @@ import static org.junit.Assert.assertTrue;
  */
 public class AppTest 
 {
-    /**
-     * Rigorous Test :-)
-     */
-    @Test
+    //@Test
     public void shouldAnswerWithTrue()
     {
         try {
@@ -39,6 +33,7 @@ public class AppTest
                 Map map = fmd.getJsonMap(content);
 
                 System.out.println(map);
+                System.out.println("fileName => "+FileHelper.getFileNameFromFullPath(name));
             }
             System.out.println("\n\n\n\n");
         }
@@ -46,4 +41,16 @@ public class AppTest
             e.printStackTrace();
         }
     }
+
+    @Test
+    public void testFileMetaReader() {
+        try {
+            FileMetadata fmd = new FileMetadata();
+            fmd.getConfiguredDataSets();
+        }
+        catch(Exception e) {
+            e.printStackTrace();
+        }
+    }
+
 }
