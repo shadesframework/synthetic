@@ -60,12 +60,13 @@ public class FileMetadata implements Metadata {
             throw new Exception("storage metadata cannot be null");
         }
         String storageType = (String)storageMeta.get("type");
+        String pointer = (String)storageMeta.get("pointer");
 
         if (storageType==null) {
             throw new Exception("storage 'type' cannot be null");
         }
         if (storageType.trim().toLowerCase().equals("csv")) {
-            return new FileStorage();
+            return new CsvFileStorage(pointer);
         }
         return null;
     }

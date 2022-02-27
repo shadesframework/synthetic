@@ -9,14 +9,24 @@ public class GenerateSynthetic {
         try {
             FileMetadata fmd = new FileMetadata();
             ArrayList<DataSet> dataSets = fmd.getConfiguredDataSets();
+
             ArrayList<String> dataSetsAlreadyGeneratedRowsFor = new ArrayList();
             for (DataSet dataSet : dataSets) {
                 if (!dataSetsAlreadyGeneratedRowsFor.contains(dataSet.getName())) {
+                    ArrayList<String> generatedDataSets = dataSet.generateRows();
                     dataSetsAlreadyGeneratedRowsFor.add(dataSet.getName());
-                    dataSet.generateRows();
+                    for (String generatedDataSetName : generatedDataSets) {
+                        if (!dataSetsAlreadyGeneratedRowsFor.contains(generatedDataSetName)) {
+                            dataSetsAlreadyGeneratedRowsFor.add(generatedDataSetName);
+                        }
+                    }
                 }
+                logger.debug("dataSetsAlreadyGeneratedRowsFor => "+dataSetsAlreadyGeneratedRowsFor);
                 logger.debug("data set => "+dataSet.getName());
                 logger.debug("rows => "+dataSet.getGeneratedRows());
+            }
+            for (DataSet dataSet : dataSets) {
+                dataSet.storeRows();
             }
         }
         catch(Exception e) {

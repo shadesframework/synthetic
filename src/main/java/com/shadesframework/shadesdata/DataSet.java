@@ -3,6 +3,7 @@ package com.shadesframework.shadesdata;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Set;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -159,8 +160,9 @@ public class DataSet {
         // to be implemented
     }
     
-    public HashMap generateRow(ArrayList<String> dataSetsAlreadyGeneratedRowsFor, HashMap foreignKeyValues) throws Exception {
-        HashMap row = new HashMap();
+    public ArrayList<String> generateRow(ArrayList<String> dataSetsAlreadyGeneratedRowsFor, HashMap foreignKeyValues) throws Exception {
+        HashMap row = new LinkedHashMap();
+        
         if (dataSetsAlreadyGeneratedRowsFor == null) {
             dataSetsAlreadyGeneratedRowsFor = new ArrayList();
         }
@@ -276,21 +278,29 @@ public class DataSet {
             generatedRows.add(row);
             // deposit this row as 'previousRow' before returning
             generationContext.put("previousRow", row);
-            return row;
+            //return row;
         }
-        return null;
+        return dataSetsAlreadyGeneratedRowsFor;
     }
 
-    public void generateRows() throws Exception {
+    public ArrayList<String> generateRows() throws Exception {
+        ArrayList<String> toReturn = new ArrayList();
         long rowsToGenerate = this.howManyRowsToGenerate();
                 
         for (int i = 0 ; i < rowsToGenerate ; i++) {   
-            this.generateRow(null, null);
+            ArrayList<String> generatedDataSets = this.generateRow(null, null);
+            for (String generatedDataSetName : generatedDataSets) {
+                if (!toReturn.contains(generatedDataSetName)) {
+                    toReturn.add(generatedDataSetName);
+                }
+            }
         }
+        return toReturn;
     }
 
     public void storeRows() throws Exception {
-        // to be implemented
+        storageHelper.createDataSetContainer(this);
+        storageHelper.storeRows(this);
     }
 
     private boolean isValueAlreadyPresentInPrimaryKey(String columnName, Object value) throws Exception {
