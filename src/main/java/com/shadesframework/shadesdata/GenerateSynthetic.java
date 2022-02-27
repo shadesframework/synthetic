@@ -1,5 +1,6 @@
 package com.shadesframework.shadesdata;
 import java.util.ArrayList;
+import java.util.Collections;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -9,7 +10,9 @@ public class GenerateSynthetic {
         try {
             FileMetadata fmd = new FileMetadata();
             ArrayList<DataSet> dataSets = fmd.getConfiguredDataSets();
-
+            logger.debug("unsorted datasets => "+dataSets);
+            Collections.sort(dataSets);
+            logger.debug("sorted datasets => "+dataSets);
             ArrayList<String> dataSetsAlreadyGeneratedRowsFor = new ArrayList();
             for (DataSet dataSet : dataSets) {
                 if (!dataSetsAlreadyGeneratedRowsFor.contains(dataSet.getName())) {

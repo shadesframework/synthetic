@@ -18,7 +18,7 @@ public class MetaDataHelper {
     private static Logger logger = LogManager.getLogger(MetaDataHelper.class);
 
     public static boolean keyDeterminant(String dataSetName, HashMap<String, HashMap> columnsMeta, String columnName, String keyType) throws Exception {
-        
+        logger.debug("datasetName ("+dataSetName+") columnsMeta ("+columnsMeta+")");
         if (columnName == null) {
             throw new Exception("cannot pass null column name");
         }

@@ -224,8 +224,11 @@ public class DataGenHelper {
                     toReturn = option2;
                 }
             } else {
-                logger.error("could not generate a number within specified range");
-                throw new Exception("could not generate a number within specified range");
+                if (option1 >= rangeStart && option1 <= rangeEnd) {
+                    toReturn = option1;
+                } else if (option2 >= rangeStart && option2 <= rangeEnd) {
+                    toReturn = option2;
+                }
             }
             
         }

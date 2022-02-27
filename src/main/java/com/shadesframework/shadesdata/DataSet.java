@@ -8,7 +8,7 @@ import java.util.Set;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-public class DataSet {
+public class DataSet implements Comparable <DataSet> {
     private static Logger logger = LogManager.getLogger(DataSet.class);
 
     private Storage storageHelper;
@@ -95,7 +95,7 @@ public class DataSet {
     private String getSpecificRelationParameter(DataSet relatedDataset, String relationParameter) throws Exception {
         ArrayList<String> wantedRelationType = 
         new ArrayList<String>( Arrays.asList("oneToOne", "oneToMany", "ManyToOne", "ManyToMany") );
-        logger.debug("relatedDataSet => "+relatedDataset);
+        logger.debug("relatedDataSet => "+relatedDataset.getName());
         HashMap<String, String> relatedSetMeta = MetaDataHelper.getRelatedDataSetMetaData(relatedDataset.getName(), metaDataReader, relatedSets, wantedRelationType);
         if (relatedSetMeta != null) {
             String specicParameterValue = relatedSetMeta.get(relationParameter);
@@ -167,7 +167,7 @@ public class DataSet {
             dataSetsAlreadyGeneratedRowsFor = new ArrayList();
         }
         
-        if (!dataSetsAlreadyGeneratedRowsFor.contains(this.getName())) { // already covered ignore
+        if (!dataSetsAlreadyGeneratedRowsFor.contains(this.getName()) || (foreignKeyValues != null && foreignKeyValues.keySet().size() > 0)) { 
             ArrayList<String> columnNames = this.getColumns();
             for (String columnName : columnNames) {
                 if (foreignKeyValues != null) {
@@ -232,11 +232,15 @@ public class DataSet {
                     throw new Exception("dataType cannot be null for column ("+this.getName()+"."+columnName+")");
                 }
             }
+
             // all columns are generated for this row
-            // generate for related datasets now
+            logger.debug("generatedRow => "+row);
+
             dataSetsAlreadyGeneratedRowsFor.add(this.getName());
             ArrayList<String> foreignKeys = this.getForeignKeys();
 
+            
+            // generate for related datasets now
             foreignKeyValues = new HashMap();
             for (String foreignKey : foreignKeys) {
                 foreignKeyValues.put(foreignKey, row.get(foreignKey));
@@ -244,18 +248,62 @@ public class DataSet {
 
             ArrayList<DataSet> relatedDataSets = this.getRelatedDataSets();
             for (DataSet relatedDataSet : relatedDataSets) {
-                logger.debug("relatedDataSet => "+relatedDataSet);
+                logger.debug("relatedDataSet => "+relatedDataSet.getName());
                 String relationshipType = this.getRelationshipType(relatedDataSet);
+                
+                String thisColumn = getSpecificRelationParameter(relatedDataSet, "thisColumn");
+                String relatedColumn = getSpecificRelationParameter(relatedDataSet, "relatedColumn");
+
+                logger.debug("thisColumn => "+thisColumn);
+                logger.debug("relatedColumn => "+relatedColumn);
+
+                if (relatedColumn == null) {
+                    throw new Exception("related column ("+relatedColumn+") configuration missing for related data set ("+this.getName()+")");
+                }
+                if (!relatedDataSet.getColumns().contains(relatedColumn)) {
+                    throw new Exception("related column ("+relatedColumn+") missing in related data set ("+relatedDataSet.getName()+")");
+                }
+                if (thisColumn != null) {
+                    if (relationshipType.trim().toLowerCase().equals("onetoone") || 
+                            relationshipType.trim().toLowerCase().equals("onetomany")) {
+                        if (!this.isColumnPrimaryKey(thisColumn)) {
+                            throw new Exception("thisColumn ("+thisColumn+") needs to be primary key for this data set ("+this.getName()+")");
+                        }
+                    } else if (relationshipType.trim().toLowerCase().equals("manytoone") || 
+                    relationshipType.trim().toLowerCase().equals("manytomany")) {
+                        if (!this.isColumnForeignKey(thisColumn)) {
+                            throw new Exception("thisColumn ("+thisColumn+") needs to be foreign key for this data set ("+this.getName()+")");
+                        }
+                    }
+
+                    if (row.keySet().contains(thisColumn)) {
+                        foreignKeyValues.put(relatedColumn, row.get(thisColumn));        
+                    } else {
+                        throw new Exception("thisColumn ("+thisColumn+") is not present in this dataset ("+this.getName()+") so could not be set as foreign key for dataset ("+relatedDataSet.getName()+")");
+                    }
+                }
+                else {
+                    if (row.keySet().contains(relatedColumn)) {
+                        foreignKeyValues.put(relatedColumn, row.get(relatedColumn));        
+                    } else {
+                        throw new Exception("relatedColumn ("+relatedColumn+") is not present in this dataset ("+this.getName()+") so could not be set as foreign key for dataset ("+relatedDataSet.getName()+")");
+                    }
+                }
+
                 if (relationshipType != null) {
                     int multiplicity = 0;
                     if (relationshipType.trim().toLowerCase().equals("onetoone") || 
                             relationshipType.trim().toLowerCase().equals("manytoone")) {
-
+                        if (!relatedDataSet.isColumnPrimaryKey(relatedColumn)) {
+                            throw new Exception("relatedColumn ("+relatedColumn+") needs to be primary key for related data set ("+relatedDataSet.getName()+")");
+                        }
                         multiplicity = 1;
 
                     } else if(relationshipType.trim().toLowerCase().equals("onetomany") || 
                         relationshipType.trim().toLowerCase().equals("manytomany")) {
-                        
+                        if (!relatedDataSet.isColumnForeignKey(relatedColumn)) {
+                            throw new Exception("relatedColumn ("+relatedColumn+") needs to be foreign key for related data set ("+relatedDataSet.getName()+")");
+                        }
                         String multiplicityInt = getSpecificRelationParameter(relatedDataSet, "multiplicityGuidance");
                         if (multiplicityInt != null) {
                             multiplicity = Integer.parseInt(multiplicityInt);
@@ -268,8 +316,12 @@ public class DataSet {
                     } else {
                         throw new Exception("dataset ("+this.getName()+") has unrecognized relationship type ("+relationshipType+") for related data set ("+relatedDataSet.getName()+")");
                     }
-
+                    logger.debug("======== from ("+this.getName()+") generating multiple for ("+relatedDataSet.getName()+") ====");
+                    logger.debug("multiplicity => "+multiplicity);
                     for (int i = 0 ; i < multiplicity ; i++) {
+                        logger.debug("======== multiplicity iteration ("+(i+1)+") for ("+relatedDataSet.getName()+") ====");
+                        logger.debug("dataSetsAlreadyGeneratedRowsFor => "+dataSetsAlreadyGeneratedRowsFor);
+                        logger.debug("foreignKeyValues => "+foreignKeyValues);
                         relatedDataSet.generateRow(dataSetsAlreadyGeneratedRowsFor, foreignKeyValues);
                     }
                 }
@@ -279,6 +331,10 @@ public class DataSet {
             // deposit this row as 'previousRow' before returning
             generationContext.put("previousRow", row);
             //return row;
+        }
+        else {
+            logger.debug("dataSetsAlreadyGeneratedRowsFor => "+dataSetsAlreadyGeneratedRowsFor);
+            logger.debug("already generated for ("+this.getName()+") so ignored");
         }
         return dataSetsAlreadyGeneratedRowsFor;
     }
@@ -327,5 +383,41 @@ public class DataSet {
             generatedPrimaryKeys.put(columnName, primaryKeysForColumn);
         }
         primaryKeysForColumn.add(value);
+    }
+
+    @Override
+    public int compareTo(DataSet ds2)
+    {
+        try {
+            ArrayList<DataSet> ds1ManySideSet = this.getRelatedDataSetsManySide();
+            ArrayList<DataSet> ds1OneSideSet = this.getRelatedDataSetsOneSide();
+
+            if (ds1ManySideSet.contains(ds2)) {
+                return -1;
+            }
+            if (ds1OneSideSet.contains(ds2)) {
+                return 1;
+            }
+
+            ArrayList<DataSet> ds2ManySideSet = ds2.getRelatedDataSetsManySide();
+            ArrayList<DataSet> ds2OneSideSet = ds2.getRelatedDataSetsOneSide();
+
+            if (ds2ManySideSet.contains(this)) {
+                return 1;
+            }
+            if (ds2OneSideSet.contains(this)) {
+                return -1;
+            }
+        }
+        catch(Exception e) {
+            e.printStackTrace();
+        }
+        
+        return 0;
+    }
+
+    @Override
+    public String toString() {
+        return this.getName();
     }
 }

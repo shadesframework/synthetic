@@ -3,37 +3,33 @@
         "id" : {
             "datatype" : "number",
             "format" : { 
-                "_digitsBeforeDecimal" : "3",
-                "digitsAfterDecimal" : "0",
                 "rangeStart" : "1",
-                "rangeEnd" : "200",
+                "rangeEnd" : "2",
                 "spacingFromPreviousRow" : "1",
-                "_randomSpacing" : "false",
                 "applySpacingWithIncrement" : "true",
-                "_rotate" : ["peter", "john", "steve"],
-                "_regexBased" : "[0-3]([a-c]|[e-g]{1,2})"
+                "digitsAfterDecimal" : "0"
             },
             "isPrimaryKey" : "true"
-        }, "product" : {
-            "datatype" : "string",
+        }, "productid" : {
+            "datatype" : "number",
             "format" : { 
-                "regexBased" : "product[0-9][0-9]"
+                "rangeStart" : "21",
+                "rangeEnd" : "51",
+                "spacingFromPreviousRow" : "1"
             },
             "isForeignKey" : "true"
+        }, "qty" : {
+            "datatype" : "number",
+            "format" : {
+                "rangeStart" : "5",
+                "rangeEnd" : "10",
+                "digitsAfterDecimal" : "0"
+            }
         }
-    },
-    "metarelations": {
-        "oneToOne" : [{
-            "relatedDataset" : "somedataset",
-            "relatedColumn" : "somecolumn"
-        },{
-            "relatedDataset" : "somedataset1",
-            "relatedColumn" : "somecolumn1"
-        }]
     },
     "storage" : {
         "type" : "csv",
         "pointer" : "/home/ec2-user/datagen",
-        "rows" : "10"
+        "rows" : "2"
     }
 }

@@ -1,0 +1,44 @@
+{
+    "metaset" : {
+        "id" : {
+            "datatype" : "number",
+            "format" : { 
+                "_digitsBeforeDecimal" : "3",
+                "digitsAfterDecimal" : "0",
+                "rangeStart" : "1",
+                "rangeEnd" : "2",
+                "spacingFromPreviousRow" : "1",
+                "_randomSpacing" : "false",
+                "applySpacingWithIncrement" : "true",
+                "_rotate" : ["peter", "john", "steve"],
+                "_regexBased" : "[0-3]([a-c]|[e-g]{1,2})"
+            },
+            "isPrimaryKey" : "true"
+        }, "product" : {
+            "datatype" : "string",
+            "format" : { 
+                "regexBased" : "product[0-9][0-9]"
+            }
+        }, "price" : {
+            "datatype" : "number",
+            "format" : { 
+                "rangeStart" : "10",
+                "rangeEnd" : "100",
+                "digitsAfterDecimal" : "2"
+            }
+        }
+    },
+    "metarelations": {
+        "oneToMany" : [{
+            "relatedDataset" : "order",
+            "relatedColumn" : "productid",
+            "thisColumn" : "id",
+            "multiplicityGuidance" : "2"
+        }]
+    },
+    "storage" : {
+        "type" : "csv",
+        "pointer" : "/home/ec2-user/datagen",
+        "rows" : "2"
+    }
+}

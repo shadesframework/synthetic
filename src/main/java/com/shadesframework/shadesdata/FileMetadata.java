@@ -6,7 +6,12 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 public class FileMetadata implements Metadata {
+
+    private static Logger logger = LogManager.getLogger(FileMetadata.class);
     
     private HashMap<String, DataSet> dataSets = new HashMap();
 
@@ -17,6 +22,7 @@ public class FileMetadata implements Metadata {
         Collection<String> synthFiles = FileHelper.getResources(pattern);
         
         for (String synthFile : synthFiles) {
+            logger.debug("synthFile ("+synthFile+")");
             String fileContent = FileHelper.readFileContent(synthFile);
             Map synthMeta = getJsonMap(fileContent);
             HashMap columns = (HashMap)synthMeta.get("metaset");

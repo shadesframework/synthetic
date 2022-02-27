@@ -52,11 +52,13 @@ File <dataset1>.synth
         "oneToOne" : [{
             "relatedDataset" : "<relatedDatasetName>",
             "relatedColumn" : "<columnName>" // this column needs to be primary key in "relatedDataset"
+            "thisColumn" : "<columnName>" // this column needs to be primary key in this dataset
         }],
         "oneToMany" : [{
             "relatedDataset" : "<relatedDatasetName>",
             "relatedColumn" : "<columnName>" // this column needs to be foreign key in "relatedDataset",
             "multiplicityGuidance" : "3" // this needs to be given for related Many side. Eg, 3 rows will be generated for related 'many' side for each row generated for 'this' side
+            "thisColumn" : "<columnName>" // this column needs to be primary key in this dataset
         }],
         "ManyToOne" : [{
             "relatedDataset" : "<relatedDatasetName>",
