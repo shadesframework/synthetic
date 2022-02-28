@@ -1,4 +1,3 @@
-com/shadesframework/shadesdata/GenerateSynthetic.class
 com/shadesframework/shadesdata/Storage.class
 com/shadesframework/shadesdata/MetaDataHelper.class
 com/shadesframework/shadesdata/Metadata.class
@@ -8,3 +7,4 @@ com/shadesframework/shadesdata/DataSet.class
 com/shadesframework/shadesdata/CommonHelper.class
 com/shadesframework/shadesdata/FileMetadata.class
 com/shadesframework/shadesdata/DataGenHelper.class
+com/shadesframework/shadesdata/Synthetic.class

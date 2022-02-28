@@ -11,8 +11,8 @@
     <Loggers>
         # Override log level for specified package
         <Logger name="com.shadesframework.shadesdata.DataGenHelper" level="WARN"/>
-        <Logger name="com.shadesframework.shadesdata.MetaDataHelper" level="WARN"/>
-        <Logger name="com.shadesframework.shadesdata.GenerateSynthetic" level="DEBUG"/>
+        <Logger name="com.shadesframework.shadesdata.MetaDataHelper" level="DEBUG"/>
+        <Logger name="com.shadesframework.shadesdata.Synthetic" level="DEBUG"/>
         <Logger name="com.shadesframework.shadesdata.DataSet" level="WARN"/>
         <Logger name="com.shadesframework.shadesdata.CommonHelper" level="WARN"/>
 

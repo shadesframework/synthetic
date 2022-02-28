@@ -5,6 +5,6 @@
 /home/ec2-user/shadesdata/src/main/java/com/shadesframework/shadesdata/DataGenHelper.java
 /home/ec2-user/shadesdata/src/main/java/com/shadesframework/shadesdata/CsvFileStorage.java
 /home/ec2-user/shadesdata/src/main/java/com/shadesframework/shadesdata/Metadata.java
-/home/ec2-user/shadesdata/src/main/java/com/shadesframework/shadesdata/GenerateSynthetic.java
+/home/ec2-user/shadesdata/src/main/java/com/shadesframework/shadesdata/Synthetic.java
 /home/ec2-user/shadesdata/src/main/java/com/shadesframework/shadesdata/Storage.java
 /home/ec2-user/shadesdata/src/main/java/com/shadesframework/shadesdata/MetaDataHelper.java

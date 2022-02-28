@@ -17,13 +17,25 @@
         }, "product" : {
             "datatype" : "string",
             "format" : { 
-                "regexBased" : "product[0-9][0-9]"
+                "rotate" : ["product1", "product2"]
             }
         }, "price" : {
             "datatype" : "number",
             "format" : { 
-                "rangeStart" : "10",
-                "rangeEnd" : "100",
+                "rangeStart" :  [{
+                    "parameterValue" : "10",
+                    "expression" : "#this['product']=='product1'"
+                },{
+                    "parameterValue" : "20",
+                    "expression" : "#this['product']=='product2'"
+                }],
+                "rangeEnd" : [{
+                    "parameterValue" : "19",
+                    "expression" : "#this['product']=='product1'"
+                },{
+                    "parameterValue" : "39",
+                    "expression" : "#this['product']=='product2'"
+                }],
                 "digitsAfterDecimal" : "2"
             }
         }
