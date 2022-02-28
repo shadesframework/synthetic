@@ -11,10 +11,13 @@
     <Loggers>
         # Override log level for specified package
         <Logger name="com.shadesframework.shadesdata.DataGenHelper" level="WARN"/>
-        <Logger name="com.shadesframework.shadesdata.MetaDataHelper" level="DEBUG"/>
+        <Logger name="enrichForeignKeyValuesByAddingMissingValuesFromAllParents" level="WARN"/>
+        <Logger name="com.shadesframework.shadesdata.MetaDataHelper" level="WARN"/>
         <Logger name="com.shadesframework.shadesdata.Synthetic" level="DEBUG"/>
         <Logger name="com.shadesframework.shadesdata.DataSet" level="WARN"/>
+        <Logger name="generateRowLogger" level="WARN"/>
         <Logger name="com.shadesframework.shadesdata.CommonHelper" level="WARN"/>
+        <Logger name="com.shadesframework.shadesdata.FileMetadata" level="WARN"/>
 
         <Root level="DEBUG">
             <AppenderRef ref="stdout"/>

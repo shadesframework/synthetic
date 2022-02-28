@@ -18,6 +18,14 @@
                 "spacingFromPreviousRow" : "1"
             },
             "isForeignKey" : "true"
+        }, "customerid" : {
+            "datatype" : "number",
+            "format" : { 
+                "rangeStart" : "21",
+                "rangeEnd" : "51",
+                "spacingFromPreviousRow" : "1"
+            },
+            "isForeignKey" : "true"
         }, "qty" : {
             "datatype" : "number",
             "format" : {
@@ -26,6 +34,13 @@
                 "digitsAfterDecimal" : "0"
             }
         }
+    },
+    "metarelations": {
+        "ManyToOne" : [{
+            "relatedDataset" : "customer",
+            "relatedColumn" : "id",
+            "thisColumn" : "customerid"
+        }]
     },
     "storage" : {
         "type" : "csv",

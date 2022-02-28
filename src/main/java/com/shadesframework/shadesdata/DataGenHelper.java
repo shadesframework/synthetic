@@ -3,6 +3,7 @@ import com.mifmif.common.regex.Generex;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -262,5 +263,140 @@ public class DataGenHelper {
             startWith += "9";
         }
         return Long.parseLong(startWith);
+    }
+
+    private static Logger enrichLogger = LogManager.getLogger("enrichForeignKeyValuesByAddingMissingValuesFromAllParents");
+
+    public static ArrayList<HashMap> filterRows(DataSet dataSet, HashMap criteria) throws Exception {
+        ArrayList<HashMap> toReturn = new ArrayList();
+        if (criteria == null || criteria.keySet().size() == 0) {
+            return dataSet.getGeneratedRows();
+        }
+        ArrayList<HashMap> rows = dataSet.getGeneratedRows();
+        for (HashMap row : rows) {
+            boolean criteriaMatch = true;
+            for (Object key : criteria.keySet()) {
+                Object criteriaValue = criteria.get(key);
+                Object rowValue = row.get(key);
+                if (criteriaValue != null && rowValue != null) {
+                    if (!criteriaValue.equals(rowValue)) {
+                        criteriaMatch = false;
+                        break;
+                    }
+                }
+            }
+            if (criteriaMatch) {
+                toReturn.add(row);
+            }
+        }
+        return toReturn;
+    }
+
+    public static HashMap selectRandomRow(DataSet dataSet) throws Exception {
+        int randomIndex = ThreadLocalRandom.current().nextInt(0, dataSet.getGeneratedRows().size());
+        return dataSet.getGeneratedRows().get(randomIndex);
+    }
+
+    public static HashMap selectRandomRow(ArrayList<HashMap> rows) throws Exception {
+        int randomIndex = ThreadLocalRandom.current().nextInt(0, rows.size());
+        return rows.get(randomIndex);
+    }
+
+    private static ArrayList<HashMap> getRowParents(HashMap<String, Object> row) throws Exception {
+        ArrayList<HashMap> toReturn = new ArrayList();
+        for (String key : row.keySet()) {
+            if (key.trim().startsWith("@parent")) {
+                toReturn.add((HashMap)row.get(key));
+            }
+        }
+        return toReturn;
+    }
+
+    public static ArrayList<DataSet> getMissingParents(DataSet dataSetUnderProcess, HashMap row) throws Exception {
+        ArrayList<DataSet> missingDataSets = new ArrayList();
+        ArrayList<String> parentsInRow = (ArrayList<String>)row.keySet()
+                     .stream()
+                     .filter(s -> s.toString().startsWith("@parent"))
+                     .map(x -> x.toString().substring(x.toString().indexOf("-")+1))
+                     .collect(Collectors.toList());
+
+        enrichLogger.debug("parentsInRow => "+parentsInRow);
+        
+        ArrayList<DataSet> parentRelatedSets = dataSetUnderProcess.getRelatedDataSetsOneSide();
+
+        for (DataSet parentSet : parentRelatedSets) {
+            if (!parentsInRow.contains(parentSet.getName())) {
+                missingDataSets.add(parentSet);
+            }
+        }
+
+        enrichLogger.debug("missingDataSets => "+missingDataSets);
+        return missingDataSets;
+    }
+
+    public static ArrayList<HashMap> selectRowsMatchingWithPossiblyRelatedRows(DataSet dataSet, ArrayList<HashMap> possiblyRelatedRows) throws Exception {
+        HashMap criteria = new HashMap();
+        for (HashMap possiblyRelatedRow : possiblyRelatedRows) {
+            String possiblyRelatedDataSet = (String)possiblyRelatedRow.get("@dataset");
+            DataSet relatedDataSet = dataSet.getRelatedDataSetByName(possiblyRelatedDataSet);
+            if (relatedDataSet != null) {
+                String relationShipType = dataSet.getRelationshipType(relatedDataSet);
+                String dataSetSideColumn = dataSet.getSpecificRelationParameter(relatedDataSet, "thisColumn");
+                String relatedColumn = dataSet.getSpecificRelationParameter(relatedDataSet, "relatedColumn");
+                criteria.put(dataSetSideColumn, possiblyRelatedRow.get(relatedColumn));
+            }
+        }
+        return filterRows(dataSet, criteria);
+    }
+
+    public static HashMap enrichForeignKeyValuesByAddingMissingValuesFromAllParents(DataSet dataSetUnderProcess, ArrayList<String> dataSetsAlreadyGeneratedRowsFor, HashMap incomingForeignKeyValues, HashMap rowUnderConstruction) throws Exception {
+        enrichLogger.debug("=========== enrich foreign key ==========");
+        enrichLogger.debug("dataSetUnderProcess => "+dataSetUnderProcess);
+        enrichLogger.debug("incomingForeignKeyValues => "+incomingForeignKeyValues);
+        enrichLogger.debug("rowUnderConstruction => "+rowUnderConstruction);
+        enrichLogger.debug("dataSetsAlreadyGeneratedRowsFor => "+dataSetsAlreadyGeneratedRowsFor);
+
+        ArrayList<HashMap> parentRowsForTheGivenRow = getRowParents(rowUnderConstruction);
+        enrichLogger.debug("parentRowsForTheGivenRow => "+parentRowsForTheGivenRow);
+
+        ArrayList<DataSet> missingParents = getMissingParents(dataSetUnderProcess, rowUnderConstruction);
+        enrichLogger.debug("missingParents => "+missingParents);
+
+        for (DataSet missingParent : missingParents) {
+            if (!dataSetsAlreadyGeneratedRowsFor.contains(missingParent.getName())) {
+                enrichLogger.debug("missing parent ("+missingParent.getName()+") is not yet generated... generating now");
+                
+                // first generate missing parent before moving forward
+                ArrayList<String> avoidedDataSets = new ArrayList();
+                avoidedDataSets.add(dataSetUnderProcess.getName());
+                ArrayList<String> generatedDataSets = missingParent.generateRows(avoidedDataSets);
+                
+                dataSetsAlreadyGeneratedRowsFor.add(missingParent.getName());
+                dataSetsAlreadyGeneratedRowsFor.add(missingParent.getName()+"-fully-done");
+                for (String generatedDataSetName : generatedDataSets) {
+                    if (!dataSetsAlreadyGeneratedRowsFor.contains(generatedDataSetName)) {
+                        dataSetsAlreadyGeneratedRowsFor.add(generatedDataSetName);
+                    }
+                }
+                enrichLogger.debug("missing parent ("+missingParent.getName()+") generated fully");
+            }
+            ArrayList<HashMap> matchingRows = selectRowsMatchingWithPossiblyRelatedRows(missingParent, parentRowsForTheGivenRow);
+            enrichLogger.debug("matchingRows => "+matchingRows);
+
+            HashMap randomRow = selectRandomRow(matchingRows);
+            enrichLogger.debug("randomRow => "+randomRow);
+
+            rowUnderConstruction.put("@parent-"+missingParent.getName(), randomRow);
+            parentRowsForTheGivenRow = getRowParents(rowUnderConstruction);
+
+            enrichLogger.debug("parentRowsForTheGivenRow 1 => "+parentRowsForTheGivenRow);
+
+            String dataSetSideColumn = dataSetUnderProcess.getSpecificRelationParameter(missingParent, "thisColumn");
+            String relatedColumn = dataSetUnderProcess.getSpecificRelationParameter(missingParent, "relatedColumn");
+
+            incomingForeignKeyValues.put(dataSetSideColumn, randomRow.get(relatedColumn));
+        }
+        enrichLogger.debug("enriched incomingForeignKeyValues => "+incomingForeignKeyValues);
+        return incomingForeignKeyValues;
     }
 }

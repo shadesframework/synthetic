@@ -1,0 +1,25 @@
+{
+    "metaset" : {
+        "id" : {
+            "datatype" : "number",
+            "format" : { 
+                "digitsAfterDecimal" : "0",
+                "rangeStart" : "1",
+                "rangeEnd" : "2",
+                "spacingFromPreviousRow" : "1",
+                "applySpacingWithIncrement" : "true"
+            },
+            "isPrimaryKey" : "true"
+        }, "name" : {
+            "datatype" : "string",
+            "format" : { 
+                "rotate" : ["steve grill", "peter marshall", "vincent vaughan"]
+            }
+        }
+    },
+    "storage" : {
+        "type" : "csv",
+        "pointer" : "/home/ec2-user/datagen",
+        "rows" : "2"
+    }
+}

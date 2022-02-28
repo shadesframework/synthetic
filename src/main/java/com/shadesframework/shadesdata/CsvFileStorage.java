@@ -31,7 +31,9 @@ public class CsvFileStorage implements Storage {
         Files.write(Paths.get(fileNameWithPath), rowStr.getBytes(), StandardOpenOption.APPEND);
 
         for (HashMap row : dataSet.getGeneratedRows()) {
-            rowStr = (String)row.values().stream().map(Object::toString).collect(Collectors.joining(","))+"\r\n";
+            HashMap rowClone = (HashMap)row.clone();
+            rowClone.keySet().removeIf(value -> value.toString().matches("^@.*"));
+            rowStr = (String)rowClone.values().stream().map(Object::toString).collect(Collectors.joining(","))+"\r\n";
             Files.write(Paths.get(fileNameWithPath), rowStr.getBytes(), StandardOpenOption.APPEND);
         }
     }

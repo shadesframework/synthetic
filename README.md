@@ -1,6 +1,8 @@
 # shadesdata
 shadesdata is a synthetic data generation framework
 
+[["IT IS UNDER DEVELOPMENT"]]
+
 You need to provide .synth files, in the classpath, to configure synthetic data generation.
 It supports relational data
 

@@ -23,6 +23,7 @@ public class Synthetic {
         logger.debug("sorted datasets => "+dataSets);
         ArrayList<String> dataSetsAlreadyGeneratedRowsFor = new ArrayList();
         for (DataSet dataSet : dataSets) {
+            logger.debug("processing data set => "+dataSet);
             if (!dataSetsAlreadyGeneratedRowsFor.contains(dataSet.getName())) {
                 ArrayList<String> generatedDataSets = dataSet.generateRows();
                 dataSetsAlreadyGeneratedRowsFor.add(dataSet.getName());
@@ -31,6 +32,9 @@ public class Synthetic {
                         dataSetsAlreadyGeneratedRowsFor.add(generatedDataSetName);
                     }
                 }
+            }
+            else {
+                logger.debug("("+dataSet+") already generated..");
             }
             logger.debug("dataSetsAlreadyGeneratedRowsFor => "+dataSetsAlreadyGeneratedRowsFor);
             logger.debug("data set => "+dataSet.getName());
