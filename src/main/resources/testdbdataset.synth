@@ -1,0 +1,15 @@
+{
+    "metaset" : {
+        "testname" : {
+            "datatype" : "string",
+            "format" : { 
+                "regexBased" : "testname[0-9][0-9][0-9]"
+            }
+        }
+    },
+    "storage" : {
+        "type" : "db",
+        "pointer" : "jdbc:h2:file:/home/ec2-user/datagen/test",
+        "rows" : "100"
+    }
+}

@@ -5,9 +5,9 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
 
 public class FileMetadata implements Metadata {
 
@@ -69,12 +69,17 @@ public class FileMetadata implements Metadata {
         String pointer = (String)storageMeta.get("pointer");
 
         if (storageType==null) {
-            throw new Exception("storage 'type' cannot be null");
+            storageType = "csv";
         }
+        
         if (storageType.trim().toLowerCase().equals("csv")) {
             return new CsvFileStorage(pointer);
+        } else if (storageType.trim().toLowerCase().equals("db")) {
+            return new DbFileStorage(pointer);
+        } else {
+            throw new Exception("unrecognized storage type ("+storageType+")");
         }
-        return null;
+        //return null;
     }
     
 }

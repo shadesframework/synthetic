@@ -75,8 +75,8 @@ File <dataset1>.synth
         }]
     },
     "storage" : {
-        "type" : // "json", "csv" (default), OR "db", [only csv is supported at the moment]
-        "pointer" : // "filepath" (default "./") OR "jdbc url",
+        "type" : // "json", "csv" (default), OR "db", [only csv and db are supported at the moment]
+        "pointer" : // "filepath" (default "./") OR "jdbc url" (default "jdbc:h2:file:~/test"),
         "rows" : "<rows>" // default 10
     }
 }
@@ -110,6 +110,8 @@ java -jar ./target/shadesdata-0.0.1-SNAPSHOT.jar
 ```
 
 The datasets will be generated in the location pointed to by storage.pointer property of each entity.
+
+There is one example to showcase storing generated data in database (see testdbdataset.synth for jdbc configuration)
 
 You can also use this library for data generation for your unit testing. Just provide the necessary .synth files in the classpath and call Synthetic.generate() from your test case initializations.
 
