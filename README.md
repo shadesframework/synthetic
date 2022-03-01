@@ -88,17 +88,17 @@ Suppose we want to generate products, customers and orders matching following re
 
 1. each product could have many orders generated for it
 2. each order will belong to a unique customer (customer will have many orders)
-3. product names will be saved in column "product" and will have regex patter 'product[0-9][0-9][0-9]'
+3. product names will be saved in column "product" and will have regex pattern 'product[0-9][0-9][0-9]'
 4. product price will depend on the product names
     4i. if product = product111, price will range between 10 and 19
     4ii if product = product211, price will range between 20 and 39
-    4iii for all other product names, price will range ween 50 and 100
+    4iii for all other product names, price will range between 50 and 100
 5. product price will be saved in column 'price'
 6. generated customer names will be selected from a rotating list
 7. generate 100 rows of data for each of these entities.
 8. set primary and foreign key relations, in the generated data, according to #1 and #2 above
 
-This configuration for this example is realized in the resources folder as files order.synth, customer.synth and product.synth
+The configuration for this example is realized in the resources folder as files order.synth, customer.synth and product.synth
 
 you can build the maven project and run it as 
 
@@ -111,7 +111,7 @@ java -jar ./target/shadesdata-0.0.1-SNAPSHOT.jar
 
 The datasets will be generated in the location pointed to by storage.pointer property of each entity.
 
-You can also use this library for data generation for your unit testing. Just provide the necessary .synth files in the classpath and call Synthetic.generate() from your test case initializations;
+You can also use this library for data generation for your unit testing. Just provide the necessary .synth files in the classpath and call Synthetic.generate() from your test case initializations.
 
 Happy data generation!!!
 
