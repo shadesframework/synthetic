@@ -228,6 +228,9 @@ public class DataSet implements Comparable <DataSet> {
                         }
                         else if (dataType.toLowerCase().trim().equals("string")) {
                             columnValue = DataGenHelper.generateString(columnName, format, row, previousRow);
+                        } 
+                        else if (dataType.toLowerCase().trim().equals("date")) {
+                            columnValue = DataGenHelper.generateDate(columnName, format, row, previousRow);
                         } else {
                             throw new Exception("unrecognized datatype ("+dataType+") specified for column ("+this.getName()+"."+columnName+")");
                         }

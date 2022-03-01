@@ -14,7 +14,7 @@ File <dataset1>.synth
 {
     "metaset" : {
         "<columnName>" : { // specify columnName
-            "datatype" : // "number" or "string",
+            "datatype" : // "number" or "string" or "date",
             "format" : { 
                 // ***** for "number" datatype *****
                 "digitsBeforeDecimal" : "3",
@@ -45,6 +45,14 @@ File <dataset1>.synth
                 "rotate" : ["option1", "option2", "option3", ...] // each row will pick next option
                 "regexBased" : "[0-3]([a-c]|[e-g]{1,2})"
 
+                // **** for "date" data type
+                "rangeEnd" : "01-01-2021", // format has to be "dd-mm-yyyy"
+                "rangeStart" : "30-05-2021", // format has to be "dd-mm-yyyy"
+                
+                "spacingFromPreviousRow" : "4", // the generated date will be spaced by 4 days(as specified by spacing type) than previous generated row (same column).
+                "spacingType" : "days" // or week, month, etc
+                "randomSpacing" : "true", // the spacing above will be chosen at random between 0 and 4.
+                "applySpacingWithIncrement" : "true",
             },
             "isPrimaryKey" : // "true" or "false"(default),
             "isForeignKey" : // "true" or "false"(default)
@@ -90,13 +98,13 @@ Suppose we want to generate products, customers and orders matching following re
 2. each order will belong to a unique customer (customer will have many orders)
 3. product names will be saved in column "product" and will have regex pattern 'product[0-9][0-9][0-9]'
 4. product price will depend on the product names
-    4i. if product = product111, price will range between 10 and 19
-    4ii if product = product211, price will range between 20 and 39
-    4iii for all other product names, price will range between 50 and 100
+    4-i) if product = product111, price will range between 10 and 19
+    4-ii) if product = product211, price will range between 20 and 39
+    4-iii) for all other product names, price will range between 50 and 100
 5. product price will be saved in column 'price'
 6. generated customer names will be selected from a rotating list
 7. generate 100 rows of data for each of these entities.
-8. set primary and foreign key relations, in the generated data, according to #1 and #2 above
+8. set primary and foreign key values, in the generated data, according to #1 and #2 above
 
 The configuration for this example is realized in the resources folder as files order.synth, customer.synth and product.synth
 

@@ -5,6 +5,12 @@
             "format" : { 
                 "regexBased" : "testname[0-9][0-9][0-9]"
             }
+        }, "testdate" : {
+            "datatype" : "date",
+            "format" : { 
+                "rangeStart" : "01-01-2021",
+                "rangeEnd" : "31-12-2021"
+            }
         }
     },
     "storage" : {

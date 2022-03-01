@@ -19,6 +19,8 @@
         <Logger name="com.shadesframework.shadesdata.CommonHelper" level="WARN"/>
         <Logger name="com.shadesframework.shadesdata.FileMetadata" level="WARN"/>
         <Logger name="com.shadesframework.shadesdata.DbFileStorage" level="WARN"/>
+        <Logger name="dateGenlogger" level="WARN"/>
+        
 
         <Root level="DEBUG">
             <AppenderRef ref="stdout"/>

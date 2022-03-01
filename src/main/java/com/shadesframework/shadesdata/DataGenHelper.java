@@ -1,6 +1,8 @@
 package com.shadesframework.shadesdata;
 import com.mifmif.common.regex.Generex;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
@@ -264,6 +266,182 @@ public class DataGenHelper {
         }
         return Long.parseLong(startWith);
     }
+
+    /// date data generation start
+    private static Logger dateGenlogger = LogManager.getLogger("dateGenlogger");
+
+    private static boolean doesDateDependOnPreviousRow(HashMap format, HashMap row) throws Exception {
+        Object spacing = MetaDataHelper.getColumnFormatParameterValue("spacingFromPreviousRow",format, row);
+        if (spacing == null) {
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    private static Date generateDateWithSpacing(Date originalDate, int spacing, String spacingType,
+    boolean randomSpacing, String increment, Date rangeStart, Date rangeEnd) throws Exception {
+        SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy");
+
+        logger.debug("originalDate => "+originalDate);
+        logger.debug("spacing => "+spacing);
+        logger.debug("randomSpacing => "+randomSpacing);
+        logger.debug("spacingType => "+spacingType);
+        logger.debug("increment => "+increment);
+        logger.debug("rangeStart => "+rangeStart);
+        logger.debug("rangeEnd => "+rangeEnd);
+
+        Date option1 = null;
+        Date option2 = null;
+        if (randomSpacing) {
+            int randomSpace = ThreadLocalRandom.current().nextInt(0, spacing);
+            option1 = CommonHelper.addDurationToDate(originalDate, randomSpace, spacingType);
+            option2 = CommonHelper.addDurationToDate(originalDate, -randomSpace, spacingType);
+        }
+        else {
+            option1 = CommonHelper.addDurationToDate(originalDate, spacing, spacingType);
+            option2 = CommonHelper.addDurationToDate(originalDate, -spacing, spacingType);
+        }
+        
+        logger.debug("option1 => "+option1);
+        logger.debug("option2 => "+option2);
+
+        Date toReturn = option1;
+        boolean shouldIncrement = false;
+        boolean ignore = true;
+
+        if (increment != null) {
+            logger.debug("increment not null ("+increment+")");
+            if (increment.trim().equals("true")) {
+                toReturn = option1;
+                shouldIncrement = true;
+            }
+            else {
+                toReturn = option2;
+                shouldIncrement = false;
+            }
+            ignore = false;
+        } 
+
+        if (!rangeStart.equals(sdf.parse("01-01-1770")) && !rangeEnd.equals(sdf.parse("01-01-1770"))) {
+            if (!ignore && shouldIncrement) {
+                if (option1.compareTo(rangeStart) >= 0 && option1.compareTo(rangeEnd) <= 0) {
+                    toReturn = option1;
+                }
+            } else if (!ignore && !shouldIncrement) {
+                if (option2.compareTo(rangeStart) >= 0 && option2.compareTo(rangeEnd) <= 0) {
+                    toReturn = option2;
+                }
+            } else {
+                if (option1.compareTo(rangeStart) >= 0 && option1.compareTo(rangeEnd) <= 0) {
+                    toReturn = option1;
+                } else if (option2.compareTo(rangeStart) >= 0 && option2.compareTo(rangeEnd) <= 0) {
+                    toReturn = option2;
+                }
+            }
+            
+        }
+        logger.debug("toReturn => "+toReturn);
+        return toReturn;
+    }
+
+    private static Date generateRandomDate(Date rangeStart, Date rangeEnd) throws Exception {
+        dateGenlogger.debug("\n\n");
+        dateGenlogger.debug("rangeStart => "+rangeStart);
+        dateGenlogger.debug("rangeEnd => "+rangeEnd);
+
+        if (rangeStart == null) {
+            throw new Exception("rangeStart date cannot be null");
+        }
+        if (rangeEnd == null) {
+            throw new Exception("rangeEnd date cannot be null");
+        }
+        if (rangeStart.compareTo(rangeEnd) > 0) {
+            throw new Exception("rangeStart ("+rangeStart+") cannot be greater than range end ("+rangeEnd+")");
+        }
+
+        int daysDiff = CommonHelper.daysBetween(rangeStart, rangeEnd);
+        dateGenlogger.debug("daysDiff => "+daysDiff);
+
+        int randomDays = ThreadLocalRandom.current().nextInt(0, daysDiff);
+        dateGenlogger.debug("daysDiff => "+daysDiff);
+
+        Date randomDate = CommonHelper.addDurationToDate(rangeStart, randomDays, "days");
+        dateGenlogger.debug("randomDate => "+randomDate);
+
+        return randomDate;
+    }
+
+    public static Date generateDate(String columnName, HashMap format, HashMap row, HashMap previousRow) throws Exception {
+        
+        SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy");
+
+        Date rangeStart = sdf.parse("01-01-1770");
+        Object rangeStartObj = MetaDataHelper.getColumnFormatParameterValue("rangeStart",format, row);
+        dateGenlogger.debug("rangeStartObj => "+rangeStartObj);
+        if (rangeStartObj != null) {
+            rangeStart = sdf.parse((String)rangeStartObj);
+        }
+        dateGenlogger.debug("rangeStart => "+rangeStart);
+
+        Date rangeEnd = sdf.parse("01-01-1770");
+        Object rangeEndObj = MetaDataHelper.getColumnFormatParameterValue("rangeEnd",format, row);
+        dateGenlogger.debug("rangeEndObj => "+rangeEndObj);
+        if (rangeEndObj != null) {
+            rangeEnd = sdf.parse((String)rangeEndObj);
+        }
+        dateGenlogger.debug("rangeEnd => "+rangeEnd);
+
+
+        if (doesDateDependOnPreviousRow(format, row) && previousRow != null) {
+            logger.debug("date depends on previous row");
+            Date date = (Date)previousRow.get(columnName);
+            if (date == null) {
+                throw new Exception("date doesnt exist for previous row");
+            }
+
+            Object spacingStr = MetaDataHelper.getColumnFormatParameterValue("spacingFromPreviousRow",format, row);
+            int spacing = 4;
+            if (spacingStr != null) {
+                spacing = Integer.parseInt((String)spacingStr);
+            }
+
+            Object randomSpacingStr = MetaDataHelper.getColumnFormatParameterValue("randomSpacing",format, row);
+            boolean randomSpacing = false;
+            if (randomSpacingStr != null) {
+                randomSpacing = Boolean.parseBoolean((String)randomSpacingStr);
+            }
+            
+            Object incrementStr = MetaDataHelper.getColumnFormatParameterValue("applySpacingWithIncrement",format, row);
+            String increment = null;
+            if (incrementStr != null) {
+                increment = incrementStr.toString();
+            }
+            
+
+            Object spacingType = MetaDataHelper.getColumnFormatParameterValue("spacingType",format, row);
+            if (spacingType == null) {
+                spacingType = "days";
+            }
+
+            Date genenratedDate = generateDateWithSpacing(date, spacing, (String)spacingType, randomSpacing, increment, rangeStart, rangeEnd);
+            
+            logger.debug("genenratedDate =>"+genenratedDate);
+            
+            return genenratedDate;
+        } else {
+            logger.debug("date does not depend on previous row");
+            
+            Date genenratedDate = generateRandomDate(rangeStart, rangeEnd);
+            logger.debug("genenratedNumber =>"+genenratedDate);
+            
+
+            return genenratedDate;
+        
+        }
+    }
+
+    /// date data generation end
 
     private static Logger enrichLogger = LogManager.getLogger("enrichLogger");
 

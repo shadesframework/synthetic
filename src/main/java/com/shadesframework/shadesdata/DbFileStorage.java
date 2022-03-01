@@ -5,6 +5,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -38,6 +39,8 @@ public class DbFileStorage implements Storage {
                 ddlCreateQuery += columnName+" int";
             } else if (columnType.trim().equals("string")) {
                 ddlCreateQuery += columnName+" varchar(255)";
+            } else if (columnType.trim().equals("date")) {
+                ddlCreateQuery += columnName+" date";
             } else {
                 throw new Exception("unrecognized datatype ("+columnType+") for column ("+dataSet.getName()+"."+columnName+")");
             }
@@ -75,6 +78,8 @@ public class DbFileStorage implements Storage {
                 ddlInsertQuery += row.get(columnName);
             } else if (columnType.trim().equals("string")) {
                 ddlInsertQuery += "'"+row.get(columnName)+"'";
+            } else if (columnType.trim().equals("date")) {
+                ddlInsertQuery += "'"+new java.sql.Date(((Date)row.get(columnName)).getTime())+"'";
             } else {
                 throw new Exception("unrecognized datatype ("+columnType+") for column ("+dataSet.getName()+"."+columnName+")");
             }
