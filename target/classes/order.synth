@@ -45,6 +45,6 @@
     "storage" : {
         "type" : "csv",
         "pointer" : "/home/ec2-user/datagen",
-        "rows" : "2"
+        "rows" : "100"
     }
 }

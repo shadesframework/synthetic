@@ -265,7 +265,7 @@ public class DataGenHelper {
         return Long.parseLong(startWith);
     }
 
-    private static Logger enrichLogger = LogManager.getLogger("enrichForeignKeyValuesByAddingMissingValuesFromAllParents");
+    private static Logger enrichLogger = LogManager.getLogger("enrichLogger");
 
     public static ArrayList<HashMap> filterRows(DataSet dataSet, HashMap criteria) throws Exception {
         ArrayList<HashMap> toReturn = new ArrayList();
@@ -307,6 +307,17 @@ public class DataGenHelper {
         for (String key : row.keySet()) {
             if (key.trim().startsWith("@parent")) {
                 toReturn.add((HashMap)row.get(key));
+            }
+        }
+        return toReturn;
+    }
+
+    private static ArrayList<DataSet> getRowParentDataSets(DataSet dataSetUnderProcessing, HashMap<String, Object> row) throws Exception {
+        ArrayList<DataSet> toReturn = new ArrayList();
+        for (String key : row.keySet()) {
+            if (key.trim().startsWith("@parent")) {
+                String parentDataSet = (String)((HashMap)row.get(key)).get("@dataset");
+                toReturn.add(dataSetUnderProcessing.getMetaReader().getDataSet(parentDataSet));
             }
         }
         return toReturn;
@@ -369,6 +380,11 @@ public class DataGenHelper {
                 // first generate missing parent before moving forward
                 ArrayList<String> avoidedDataSets = new ArrayList();
                 avoidedDataSets.add(dataSetUnderProcess.getName());
+                ArrayList<DataSet> parentDataSets = getRowParentDataSets(dataSetUnderProcess, rowUnderConstruction);
+                for (DataSet parentDataSet : parentDataSets) {
+                    avoidedDataSets.add(parentDataSet.getName());
+                }
+                enrichLogger.debug("avoidedDataSets => "+avoidedDataSets);
                 ArrayList<String> generatedDataSets = missingParent.generateRows(avoidedDataSets);
                 
                 dataSetsAlreadyGeneratedRowsFor.add(missingParent.getName());

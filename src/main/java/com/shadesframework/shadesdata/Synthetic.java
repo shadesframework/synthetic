@@ -42,6 +42,7 @@ public class Synthetic {
         }
         for (DataSet dataSet : dataSets) {
             dataSet.storeRows();
+            logger.info("data set ("+dataSet+") generated and stored");
         }
     }
 }

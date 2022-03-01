@@ -13,6 +13,9 @@ public class CsvFileStorage implements Storage {
 
     public CsvFileStorage(String storageLocation) {
         this.storagePath = storageLocation;
+        if (this.storagePath == null || this.storagePath.trim().equals("")) {
+            this.storagePath = "."+File.separator;
+        }
     }
     
     @Override
@@ -29,8 +32,10 @@ public class CsvFileStorage implements Storage {
         ArrayList<String> header = dataSet.getColumns();
         String rowStr = String.join(",", header)+"\r\n";
         Files.write(Paths.get(fileNameWithPath), rowStr.getBytes(), StandardOpenOption.APPEND);
-
-        for (HashMap row : dataSet.getGeneratedRows()) {
+        ArrayList<HashMap> rows = dataSet.getGeneratedRows();
+        rows = CommonHelper.selectRandomItemsNoRepeat(rows, dataSet.howManyRowsToGenerate());
+        
+        for (HashMap row : rows) {
             HashMap rowClone = (HashMap)row.clone();
             rowClone.keySet().removeIf(value -> value.toString().matches("^@.*"));
             rowStr = (String)rowClone.values().stream().map(Object::toString).collect(Collectors.joining(","))+"\r\n";

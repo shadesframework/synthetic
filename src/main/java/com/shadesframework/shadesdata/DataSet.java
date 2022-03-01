@@ -41,6 +41,10 @@ public class DataSet implements Comparable <DataSet> {
         return name;
     }
 
+    public Metadata getMetaReader() {
+        return this.metaDataReader;
+    }
+
     public ArrayList<String> getColumns() throws Exception {
         if (columns != null) {
             Object keys = columns.keySet();
@@ -381,6 +385,7 @@ public class DataSet implements Comparable <DataSet> {
         long rowsToGenerate = this.howManyRowsToGenerate();
         generateRowLogger.debug("\n\n\n===============generateRows() for ("+this.getName()+")=========");
         generateRowLogger.debug("rowsToGenerate => "+rowsToGenerate);
+        generateRowLogger.debug("avoidGenerationOfTheseDataSets => "+avoidGenerationOfTheseDataSets);
 
         ArrayList<String> fullyDoneDataSets = new ArrayList();
         if (avoidGenerationOfTheseDataSets != null) {
@@ -390,6 +395,7 @@ public class DataSet implements Comparable <DataSet> {
                 }
             }
         }
+        generateRowLogger.debug("fullyDoneDataSets (start)=> "+fullyDoneDataSets);
         for (int i = 0 ; i < rowsToGenerate ; i++) { 
             generateRowLogger.debug("=== generatting row ("+(i+1)+") for ("+this.getName()+") =====");  
             ArrayList<String> generatedDataSets = this.generateRow((ArrayList)fullyDoneDataSets.clone(), null, null);
@@ -408,7 +414,7 @@ public class DataSet implements Comparable <DataSet> {
                 }
             }
             generateRowLogger.debug("toReturn => "+toReturn);
-            generateRowLogger.debug("fullyDoneDataSets => "+fullyDoneDataSets);
+            generateRowLogger.debug("fullyDoneDataSets (end) => "+fullyDoneDataSets);
         }
         return toReturn;
     }

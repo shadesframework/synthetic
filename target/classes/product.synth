@@ -17,24 +17,30 @@
         }, "product" : {
             "datatype" : "string",
             "format" : { 
-                "rotate" : ["product1", "product2"]
+                "regexBased" : "product[0-9][0-9][0-9]"
             }
         }, "price" : {
             "datatype" : "number",
             "format" : { 
                 "rangeStart" :  [{
                     "parameterValue" : "10",
-                    "expression" : "#this['product']=='product1'"
+                    "expression" : "#this['product']=='product111'"
                 },{
                     "parameterValue" : "20",
-                    "expression" : "#this['product']=='product2'"
+                    "expression" : "#this['product']=='product211'"
+                },{
+                    "parameterValue" : "50",
+                    "expression" : "1==1"
                 }],
                 "rangeEnd" : [{
                     "parameterValue" : "19",
-                    "expression" : "#this['product']=='product1'"
+                    "expression" : "#this['product']=='product111'"
                 },{
                     "parameterValue" : "39",
-                    "expression" : "#this['product']=='product2'"
+                    "expression" : "#this['product']=='product211'"
+                },{
+                    "parameterValue" : "100",
+                    "expression" : "1==1"
                 }],
                 "digitsAfterDecimal" : "2"
             }
@@ -51,6 +57,6 @@
     "storage" : {
         "type" : "csv",
         "pointer" : "/home/ec2-user/datagen",
-        "rows" : "2"
+        "rows" : "100"
     }
 }
