@@ -12,7 +12,7 @@ import org.apache.logging.log4j.Logger;
 public class DataGenHelper {
     private static Logger logger = LogManager.getLogger(DataGenHelper.class);
 
-    public static String generateString(String columnName, HashMap format, HashMap row, HashMap previousRow) throws Exception {
+    public static String generateString(DataSet dataSet, ArrayList<String> dataSetsAlreadyGeneratedRowsFor, String columnName, HashMap format, HashMap row, HashMap previousRow) throws Exception {
         String generatedString = null;
         Object regExp = MetaDataHelper.getColumnFormatParameterValue("regexBased",format, row);
         if (regExp != null) {
@@ -28,7 +28,7 @@ public class DataGenHelper {
 
         Object rotate = MetaDataHelper.getColumnFormatParameterValue("rotate",format, row);
         if (rotate != null) {
-            generatedString = pickNextStringFromList((ArrayList<String>)rotate, columnName, previousRow);
+            generatedString = pickNextStringFromList(dataSet, dataSetsAlreadyGeneratedRowsFor, (ArrayList)rotate, columnName, previousRow);
             return generatedString;
         }
 
@@ -48,19 +48,132 @@ public class DataGenHelper {
         return stringList.get(randomIndex);
     }
 
-    private static String pickNextStringFromList(ArrayList<String> stringList, String columnName, HashMap previousRow) throws Exception {
+    private static Logger rotateLogger = LogManager.getLogger("rotateLogger");
+    private static String pickNextStringFromList(DataSet dataSet, ArrayList<String> dataSetsAlreadyGeneratedRowsFor, ArrayList rotateList, String columnName, HashMap previousRow) throws Exception {
         if (previousRow == null) {
-            return stringList.get(0);
+            String entryValue = evaluateEntry(dataSet, dataSetsAlreadyGeneratedRowsFor, columnName, rotateList.get(0), previousRow);
+            rotateLogger.debug("no prev row entry value ("+entryValue+")");
+            return entryValue;
         }
         String previousRowString = (String)previousRow.get(columnName);
+        
         int indexToPick = 0;
         if (previousRowString != null) {
-            indexToPick = stringList.indexOf(previousRowString) + 1;
-            if (indexToPick > (stringList.size()-1)) {
+            indexToPick = findStringinListOfEntries(rotateList, previousRowString, dataSet, columnName, previousRow, dataSetsAlreadyGeneratedRowsFor) + 1;
+            if (indexToPick < 0) {
+                indexToPick = 0;
+            }
+            if (indexToPick > (rotateList.size()-1)) {
                 indexToPick = 0;
             }
         }
-        return stringList.get(indexToPick);
+        String entryValue = evaluateEntry(dataSet, dataSetsAlreadyGeneratedRowsFor, columnName, rotateList.get(indexToPick), previousRow);
+        rotateLogger.debug("entry value for index ("+indexToPick+") ("+entryValue+")");
+        return entryValue;
+    }
+
+    private static int findStringinListOfEntries(ArrayList rotateList, String stringToFind, DataSet dataSet, String columnName, HashMap previousRow, ArrayList<String> dataSetsAlreadyGeneratedRowsFor) throws Exception {
+        int i = 0;
+        for (Object entry : rotateList) {
+            String entryValue = evaluateEntry(dataSet, dataSetsAlreadyGeneratedRowsFor, columnName, entry, previousRow);
+            if (stringToFind != null 
+                    && entryValue.trim().equals(stringToFind)) {
+                return i;
+            }
+            i++;
+        }
+        return -1;
+    }
+
+    private static String evaluateEntry(DataSet dataSet, ArrayList<String> dataSetsAlreadyGeneratedRowsFor, String columnName, Object entry, HashMap previousRow) throws Exception {
+        if (entry instanceof String) {
+            return (String)entry;
+        } else if (entry instanceof HashMap) {
+            return evaluateGrabber(dataSet, dataSetsAlreadyGeneratedRowsFor, columnName, (HashMap)entry, previousRow);
+        }
+        else {
+            throw new Exception("dont know how to process entry ("+entry+")");
+        }
+    }
+
+    private static String evaluateGrabber(DataSet dataSet, ArrayList<String> dataSetsAlreadyGeneratedRowsFor, String columnName, HashMap grabber, HashMap previousRow) throws Exception {
+        rotateLogger.debug("dataSet ("+dataSet+")");
+        rotateLogger.debug("dataSetsAlreadyGeneratedRowsFor ("+dataSetsAlreadyGeneratedRowsFor+")");
+        rotateLogger.debug("columnName => "+ columnName);
+        rotateLogger.debug("grabber => "+ grabber);
+        rotateLogger.debug("previousRow => "+ previousRow);
+
+        String keyToReturn = (String)grabber.get("valuekey");
+        rotateLogger.debug("keyToReturn => "+keyToReturn);
+        if (keyToReturn == null ||
+            keyToReturn.trim().equals("")) {
+            throw new Exception("valuekey cannot be null in ("+grabber+")");
+        }
+        HashMap<String, Object> selector = (HashMap)grabber.get("selector");
+        rotateLogger.debug("selector => "+selector);
+        if (selector == null) {
+            throw new Exception("selector cannot be null in ("+grabber+")");
+        }
+        String dataSetStr = (String)selector.get("dataset");
+        rotateLogger.debug("dataSetStr =>"+dataSetStr);
+        if (dataSetStr == null ||
+            dataSetStr.trim().equals("")) {
+            throw new Exception("dataset cannot be null in ("+grabber+")");
+        }
+        dataSetStr = dataSetStr.trim();
+        HashMap query = (HashMap)selector.get("query");
+        rotateLogger.debug("query =>"+query);
+        if (query == null) {
+            throw new Exception("query cannot be null in ("+grabber+")");
+        }
+        if (dataSetStr.trim().startsWith("@related")) {
+            ArrayList<DataSet> relatedDataSets = dataSet.getRelatedDataSetsByThisColumnName(columnName);
+            if (relatedDataSets.size() == 0) {
+                throw new Exception("column ("+dataSet.getName()+"."+columnName+") is not related to any other dataset. specify the dataset");
+            }
+            if (relatedDataSets.size() > 1) {
+                dataSetStr = dataSetStr.substring(dataSetStr.indexOf("@related.")+9).trim();
+            }
+            if (relatedDataSets.size() == 1) {
+                dataSetStr = relatedDataSets.get(0).getName().trim();
+            }
+        }
+
+        DataSet dataSetToQuery = dataSet.getMetaReader().getDataSet(dataSetStr);
+        rotateLogger.debug("dataSetToQuery =>"+dataSetToQuery);
+        if (dataSetToQuery == null) {
+            throw new Exception("grabber data set ("+dataSetToQuery+") not found while generating column ("+dataSet.getName()+"."+columnName+")");
+        }
+        if (dataSetToQuery.getGeneratedRows() == null ||
+                dataSetToQuery.getGeneratedRows().size() == 0) {
+                rotateLogger.debug("data set to query/grabber ("+dataSetToQuery.getName()+") is not yet generated... generating now");
+            
+                // first generate missing parent before moving forward
+                ArrayList<String> avoidedDataSets = new ArrayList();
+                avoidedDataSets.add(dataSet.getName());
+                ArrayList<DataSet> parentDataSets = getRowParentDataSets(dataSet, previousRow);
+                for (DataSet parentDataSet : parentDataSets) {
+                    avoidedDataSets.add(parentDataSet.getName());
+                }
+                rotateLogger.debug("avoidedDataSets => "+avoidedDataSets);
+                ArrayList<String> generatedDataSets = dataSetToQuery.generateRows(avoidedDataSets);
+                
+                dataSetsAlreadyGeneratedRowsFor.add(dataSetToQuery.getName());
+                dataSetsAlreadyGeneratedRowsFor.add(dataSetToQuery.getName()+"-fully-done");
+                for (String generatedDataSetName : generatedDataSets) {
+                    if (!dataSetsAlreadyGeneratedRowsFor.contains(generatedDataSetName)) {
+                        dataSetsAlreadyGeneratedRowsFor.add(generatedDataSetName);
+                    }
+                }
+                rotateLogger.debug("data set to query ("+dataSetToQuery.getName()+") generated fully");
+
+        }
+        ArrayList<HashMap> queryResult = filterRows(dataSetToQuery, query);
+        rotateLogger.debug("queryResult => "+queryResult);
+        if (queryResult.size() > 0) {
+            return queryResult.get(0).get(keyToReturn).toString();
+        }
+        return null;
     }
     
     private static boolean doesNumberDependOnPreviousRow(HashMap format, HashMap row) throws Exception {

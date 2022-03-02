@@ -10,16 +10,17 @@
 
     <Loggers>
         # Override log level for specified package
-        <Logger name="com.shadesframework.shadesdata.DataGenHelper" level="WARN"/>
-        <Logger name="enrichLogger" level="WARN"/>
-        <Logger name="com.shadesframework.shadesdata.MetaDataHelper" level="WARN"/>
+        <Logger name="com.shadesframework.shadesdata.DataGenHelper" level="INFO"/>
+        <Logger name="enrichLogger" level="INFO"/>
+        <Logger name="com.shadesframework.shadesdata.MetaDataHelper" level="INFO"/>
         <Logger name="com.shadesframework.shadesdata.Synthetic" level="INFO"/>
-        <Logger name="com.shadesframework.shadesdata.DataSet" level="WARN"/>
-        <Logger name="generateRowLogger" level="WARN"/>
-        <Logger name="com.shadesframework.shadesdata.CommonHelper" level="WARN"/>
-        <Logger name="com.shadesframework.shadesdata.FileMetadata" level="WARN"/>
-        <Logger name="com.shadesframework.shadesdata.DbFileStorage" level="WARN"/>
-        <Logger name="dateGenlogger" level="WARN"/>
+        <Logger name="com.shadesframework.shadesdata.DataSet" level="INFO"/>
+        <Logger name="generateRowLogger" level="INFO"/>
+        <Logger name="com.shadesframework.shadesdata.CommonHelper" level="INFO"/>
+        <Logger name="com.shadesframework.shadesdata.FileMetadata" level="INFO"/>
+        <Logger name="com.shadesframework.shadesdata.DbFileStorage" level="INFO"/>
+        <Logger name="dateGenlogger" level="INFO"/>
+        <Logger name="rotateLogger" level="INFO"/>
         
 
         <Root level="DEBUG">

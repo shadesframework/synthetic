@@ -44,7 +44,20 @@ File <dataset1>.synth
                 // **** for "string" data type, any one of below ***/
                 "randomPick" : ["option1", "option2", "option3", ...], // select random
                 "rotate" : ["option1", "option2", "option3", ...] // each row will pick next option
-                "regexBased" : "[0-3]([a-c]|[e-g]{1,2})"
+                // rotate can also be specified with a selector format
+                "rotate" : [{
+                    "parameterValue" : [{ // selector object
+						"valuekey" : "id", // selecting key 'id' from the queried dataset rows (first row)
+						"selector" : {
+							"dataset" : "@related", // dataset could be specified or it could be related
+							"query" : { // query fired on the specified dataset above
+								"name" : "equity"
+							}
+						}
+					}],
+                    "expression" : "#this['name']=='google' OR #this['name']=='apple' OR #this['name']=='tesla' OR #this['name']=='generalmotors' OR #this['name']=='verizon'"
+                }],
+                "regexBased" : "[0-3]([a-c]|[e-g]{1,2})" // generated value will match the pattern
 
                 // **** for "date" data type
                 "rangeEnd" : "01-01-2021", // format has to be "dd-mm-yyyy"

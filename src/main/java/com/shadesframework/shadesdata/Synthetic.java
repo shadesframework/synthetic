@@ -30,6 +30,7 @@ public class Synthetic {
         logger.debug("unsorted datasets => "+dataSets);
         Collections.sort(dataSets);
         logger.debug("sorted datasets => "+dataSets);
+        logger.info("Dataset evaluation order ["+dataSets+"]");
         ArrayList<String> dataSetsAlreadyGeneratedRowsFor = new ArrayList();
         for (DataSet dataSet : dataSets) {
             logger.debug("processing data set => "+dataSet);

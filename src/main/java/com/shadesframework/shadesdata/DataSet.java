@@ -139,6 +139,36 @@ public class DataSet implements Comparable <DataSet> {
         return relatedColumn;
     }
 
+    public String getThisColumn(DataSet relatedDataset) throws Exception {
+        String thisColumn = getSpecificRelationParameter(relatedDataset, "thisColumn");
+        String relationshipType = getRelationshipType(relatedDataset);
+        if (relationshipType.trim().equals("oneToOne") || relationshipType.trim().equals("oneToMany") ) {
+            if (!this.isColumnPrimaryKey(thisColumn)) {
+                throw new Exception("this column ("+thisColumn+") needs to be set as primary key in ("+this.getName()+")");
+            }
+        } else {
+            if (!this.isColumnForeignKey(thisColumn)) {
+                throw new Exception("related column ("+thisColumn+") needs to be set as foreign key in ("+this.getName()+")");
+            }
+        }
+        return thisColumn;
+    }
+
+    public ArrayList<DataSet> getRelatedDataSetsByThisColumnName(String columnName) throws Exception {
+        ArrayList<DataSet> toReturn = new ArrayList();
+        if (columnName == null) {
+            throw new Exception("column name not given or null");
+        }
+        ArrayList<DataSet> relatedDataSets = this.getRelatedDataSets();
+        for (DataSet relatedDataSet : relatedDataSets) {
+            String relatedColumn = this.getThisColumn(relatedDataSet);
+            if (relatedColumn.trim().equals(columnName.trim())) {
+                toReturn.add(relatedDataSet);
+            }
+        }
+        return toReturn;
+    }
+
     public String getRelationshipType(DataSet relatedDataset) throws Exception {
         return getSpecificRelationParameter(relatedDataset, "relationType");
     }
@@ -172,10 +202,6 @@ public class DataSet implements Comparable <DataSet> {
     public void promoteIntermediateRows() throws Exception {
         generatedRows.addAll(intermediateRows);
     }
-
-    public void applyLimitToGeneratedRows(long rowsUpperBound) throws Exception {
-        // to be implemented
-    }
     
     public ArrayList<String> generateRow(ArrayList<String> dataSetsAlreadyGeneratedRowsFor, HashMap parentRow, HashMap foreignKeyValues) throws Exception {
         HashMap row = new LinkedHashMap();
@@ -202,7 +228,9 @@ public class DataSet implements Comparable <DataSet> {
             ArrayList<String> columnNames = this.getColumns();
             for (String columnName : columnNames) {
                 if (foreignKeyValues != null) {
-                    if (foreignKeyValues.keySet().contains(columnName)) {
+                    if (foreignKeyValues.keySet().contains(columnName) 
+                        && (this.getDataFormat(columnName) == null 
+                        || this.getDataFormat(columnName).keySet().size() == 0)) {
                         row.put(columnName, foreignKeyValues.get(columnName));
                         continue;
                     }
@@ -227,7 +255,7 @@ public class DataSet implements Comparable <DataSet> {
                             columnValue = DataGenHelper.generateNumber(columnName,format, row, previousRow);
                         }
                         else if (dataType.toLowerCase().trim().equals("string")) {
-                            columnValue = DataGenHelper.generateString(columnName, format, row, previousRow);
+                            columnValue = DataGenHelper.generateString(this, dataSetsAlreadyGeneratedRowsFor, columnName, format, row, previousRow);
                         } 
                         else if (dataType.toLowerCase().trim().equals("date")) {
                             columnValue = DataGenHelper.generateDate(columnName, format, row, previousRow);

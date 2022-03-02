@@ -142,7 +142,7 @@ public class MetaDataHelper {
                         throw new Exception("expression ("+expression+") does not evaluate to boolean => ("+expressionValue+")");
                     }
                     if (((Boolean)expressionValue)) {
-                        String parameterValue = ((HashMap<String, String>)map).get("parameterValue"); 
+                        Object parameterValue = ((HashMap<String, String>)map).get("parameterValue"); 
                         logger.debug("parameter ("+parameter+") expressionParameterValue ("+parameterValue+")");
                         return parameterValue;   
                     }

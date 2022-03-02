@@ -13,19 +13,9 @@
             "isPrimaryKey" : "true"
         }, "productid" : {
             "datatype" : "number",
-            "format" : { 
-                "rangeStart" : "21",
-                "rangeEnd" : "51",
-                "spacingFromPreviousRow" : "1"
-            },
             "isForeignKey" : "true"
         }, "customerid" : {
             "datatype" : "number",
-            "format" : { 
-                "rangeStart" : "21",
-                "rangeEnd" : "51",
-                "spacingFromPreviousRow" : "1"
-            },
             "isForeignKey" : "true"
         }, "qty" : {
             "datatype" : "number",
