@@ -12,6 +12,7 @@ It supports relational data generation
 File <dataset1>.synth
 
 {
+    "example" : "true", // 'true' marks examples provided with the library...keep this as "false" (default) for your work.. you may not want to run examples for your data generation work
     "metaset" : {
         "<columnName>" : { // specify columnName
             "datatype" : // "number" or "string" or "date",
@@ -108,10 +109,10 @@ Suppose we want to generate products, customers and orders matching following re
 
 The configuration for this example is realized in the resources folder as files order.synth, customer.synth and product.synth
 
-you can build the maven project and run it as 
+you can build the maven project and run it as follows (with -examples switch)
 
 ```
-java -jar ./target/shadesdata-0.0.1-SNAPSHOT.jar
+java -jar ./target/shadesdata-0.0.1-SNAPSHOT.jar -examples
 2022-03-01 07:53:37 [com.shadesframework.shadesdata.Synthetic.generate:45] INFO data set (product) generated and stored
 2022-03-01 07:53:37 [com.shadesframework.shadesdata.Synthetic.generate:45] INFO data set (customer) generated and stored
 2022-03-01 07:53:37 [com.shadesframework.shadesdata.Synthetic.generate:45] INFO data set (order) generated and stored

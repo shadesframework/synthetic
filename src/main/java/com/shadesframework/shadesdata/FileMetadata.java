@@ -16,7 +16,7 @@ public class FileMetadata implements Metadata {
     private HashMap<String, DataSet> dataSets = new HashMap();
 
     @Override
-    public ArrayList<DataSet> getConfiguredDataSets() throws Exception {
+    public ArrayList<DataSet> getConfiguredDataSets(boolean generateExamples) throws Exception {
         ArrayList<DataSet> dataSetList = new ArrayList();
         Pattern pattern = Pattern.compile(".*synth");
         Collection<String> synthFiles = FileHelper.getResources(pattern);
@@ -25,6 +25,14 @@ public class FileMetadata implements Metadata {
             logger.debug("synthFile ("+synthFile+")");
             String fileContent = FileHelper.readFileContent(synthFile);
             Map synthMeta = getJsonMap(fileContent);
+            String example = (String)synthMeta.get("example");
+            if (example == null) {
+                example = "false";
+            }
+            if (!generateExamples && example.trim().equals("true")) {
+                logger.debug("not generating example synthFile ("+synthFile+")");
+                continue;
+            }
             HashMap columns = (HashMap)synthMeta.get("metaset");
             HashMap relatedSets = getRelatedSets((HashMap)synthMeta);
             HashMap storage = (HashMap)synthMeta.get("storage");

@@ -46,7 +46,7 @@ public class AppTest
     public void testFileMetaReader() {
         try {
             FileMetadata fmd = new FileMetadata();
-            fmd.getConfiguredDataSets();
+            fmd.getConfiguredDataSets(true);
         }
         catch(Exception e) {
             e.printStackTrace();

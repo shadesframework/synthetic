@@ -6,18 +6,27 @@ import org.apache.logging.log4j.Logger;
 
 public class Synthetic {
     private static Logger logger = LogManager.getLogger(Synthetic.class);
+    
     public static void main(final String[] args) {
         try {
-            generate();
+            boolean generateExamples = false;
+            if (args != null && args.length > 0) {
+                for (String arg : args) {
+                    if (arg.indexOf("examples") >= 0) {
+                        generateExamples = true;
+                    }
+                }
+            }
+            generate(generateExamples);
         }
         catch(Exception e) {
             e.printStackTrace();
         }
     }
 
-    public static void generate() throws Exception {
+    public static void generate(boolean generateExamples) throws Exception {
         FileMetadata fmd = new FileMetadata();
-        ArrayList<DataSet> dataSets = fmd.getConfiguredDataSets();
+        ArrayList<DataSet> dataSets = fmd.getConfiguredDataSets(generateExamples);
         logger.debug("unsorted datasets => "+dataSets);
         Collections.sort(dataSets);
         logger.debug("sorted datasets => "+dataSets);
