@@ -23,6 +23,8 @@ public class DbFileStorage implements Storage {
     
     @Override
     public void createDataSetContainer(DataSet dataSet) throws Exception {
+        logger.debug("creating container for dataset ("+dataSet+")");
+        
         String ddlDeleteQuery = "drop table if exists "+dataSet.getName();
         try {
             runSql(ddlDeleteQuery);
@@ -56,16 +58,21 @@ public class DbFileStorage implements Storage {
 
     @Override
     public void storeRows(DataSet dataSet) throws Exception {
-        
-        ArrayList<HashMap> rows = dataSet.getGeneratedRows();
-        rows = CommonHelper.selectRandomItemsNoRepeat(rows, dataSet.howManyRowsToGenerate());
-        
-        for (HashMap row : rows) {
-            HashMap rowClone = (HashMap)row.clone();
-            rowClone.keySet().removeIf(value -> value.toString().matches("^@.*"));
-            String insertSql = createInsertSql(dataSet, rowClone);
-            logger.debug("insertSql => "+insertSql);
-            runSql(insertSql);
+        try {
+            ArrayList<HashMap> rows = dataSet.getGeneratedRows();
+            rows = CommonHelper.selectRandomItemsNoRepeat(rows, dataSet.howManyRowsToGenerate());
+            
+            for (HashMap row : rows) {
+                HashMap rowClone = (HashMap)row.clone();
+                rowClone.keySet().removeIf(value -> value.toString().matches("^@.*"));
+                String insertSql = createInsertSql(dataSet, rowClone);
+                logger.debug("insertSql => "+insertSql);
+                runSql(insertSql);
+            }
+        } finally {
+            if (conn != null && !conn.isClosed()) {
+                conn.close();
+            }
         }
     }
 
@@ -91,8 +98,18 @@ public class DbFileStorage implements Storage {
         return ddlInsertQuery;
     }
 
+    private static Connection conn = null;
+
     private void runSql(String sql) throws Exception {
-        Connection conn = DriverManager.getConnection(jdbcUrl,"","");
+        if (conn == null || conn.isClosed()) {
+            if (jdbcUrl.contains("h2")) {
+                Class.forName("org.h2.Driver");
+            } else if (jdbcUrl.contains("sqlserver")) {
+                Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
+            }
+            conn = DriverManager.getConnection(jdbcUrl);
+        }
+        
         try {
             Statement stmt = conn.createStatement();
             stmt.execute(sql);
@@ -109,9 +126,6 @@ public class DbFileStorage implements Storage {
         catch(Exception e) {
             e.printStackTrace();
             throw e;
-        } finally {
-            conn.close();
-        }
-               
+        }      
     }
 }
