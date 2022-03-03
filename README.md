@@ -17,7 +17,9 @@ File <dataset1>.synth
         "<columnName>" : { // specify columnName
             "datatype" : // "number" or "string" or "date",
             "format" : { 
+                
                 // ***** for "number" datatype *****
+                
                 "digitsBeforeDecimal" : "3",
                 "digitsAfterDecimal" : "4", 
                 
@@ -25,11 +27,11 @@ File <dataset1>.synth
                 /****alternative example***/
                 "digitsAfterDecimal" : [{
                     "parameterValue" : "4" // digitsAfterDecimal should be 4 if dependentColumnName value is peter
-                    "expression" : "dependentColumn=='peter'"
+                    "expression" : "#this['dependentColumn']=='peter'"
                 },
                 {
                     "parameterValue" : "5" // digitsAfterDecimal should be 5 if the expression below evaluates to true.
-                    "expression" : "column1 > 100 and column2 < 10"
+                    "expression" : "#this['column1'] > 100 and #this['column2'] < 10"
                 }],
                 /*** example end ******/
 
@@ -41,7 +43,10 @@ File <dataset1>.synth
                 "randomSpacing" : "true", // the spacing above will be chosen at random between 0 and 4.
                 "applySpacingWithIncrement" : "true", // if true, the spacing will always be applied with increment on previous row value, otherwise decrement. If this parameter is not specified then it could be either increment or decrement.
 
+                "randomPick" : [1, 4, 6] // pick the number at random
+
                 // **** for "string" data type, any one of below ***/
+
                 "randomPick" : ["option1", "option2", "option3", ...], // select random
                 "rotate" : ["option1", "option2", "option3", ...] // each row will pick next option
                 // rotate can also be specified with a selector format
@@ -131,9 +136,9 @@ java -jar ./target/shadesdata-0.0.1-SNAPSHOT.jar -examples
 2022-03-01 07:53:37 [com.shadesframework.shadesdata.Synthetic.generate:45] INFO data set (order) generated and stored
 ```
 
-The datasets will be generated in the location pointed to by storage.pointer property of each entity.
+The datasets will be generated in the location pointed to by 'storage.pointer' property of each entity synth file.
 
-There is one example to showcase storing generated data in database (see testdbdataset.synth for jdbc configuration)
+There is one example to showcase storing of generated data in the database (see testdbdataset.synth for jdbc configuration)
 
 You can also use this library for data generation for your unit testing. Just provide the necessary .synth files in the classpath and call Synthetic.generate() from your test case initializations.
 
