@@ -21,6 +21,9 @@
         <Logger name="com.shadesframework.shadesdata.DbFileStorage" level="INFO"/>
         <Logger name="dateGenlogger" level="INFO"/>
         <Logger name="rotateLogger" level="INFO"/>
+        <Logger name="numberLogger" level="INFO"/>
+        <Logger name="expressionEvalLogger" level="INFO"/>
+        
         
 
         <Root level="DEBUG">

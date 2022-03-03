@@ -50,16 +50,26 @@ public class DataGenHelper {
 
     private static Logger rotateLogger = LogManager.getLogger("rotateLogger");
     private static String pickNextStringFromList(DataSet dataSet, ArrayList<String> dataSetsAlreadyGeneratedRowsFor, ArrayList rotateList, String columnName, HashMap previousRow) throws Exception {
+        rotateLogger.debug("\n\n\n===pickNextStringFromList===");
+        rotateLogger.debug("dataSet ("+dataSet+")");
+        rotateLogger.debug("dataSetsAlreadyGeneratedRowsFor ("+dataSetsAlreadyGeneratedRowsFor+")");
+        rotateLogger.debug("rotateList ("+rotateList+")");
+        rotateLogger.debug("columnName ("+columnName+")");
+        rotateLogger.debug("previousRow ("+previousRow+")");
+
         if (previousRow == null) {
             String entryValue = evaluateEntry(dataSet, dataSetsAlreadyGeneratedRowsFor, columnName, rotateList.get(0), previousRow);
             rotateLogger.debug("no prev row entry value ("+entryValue+")");
             return entryValue;
         }
+        
         String previousRowString = (String)previousRow.get(columnName);
+        rotateLogger.debug("previousRowString ("+previousRowString+")");
         
         int indexToPick = 0;
         if (previousRowString != null) {
             indexToPick = findStringinListOfEntries(rotateList, previousRowString, dataSet, columnName, previousRow, dataSetsAlreadyGeneratedRowsFor) + 1;
+            rotateLogger.debug("indexToPick ("+indexToPick+")");
             if (indexToPick < 0) {
                 indexToPick = 0;
             }
@@ -69,6 +79,7 @@ public class DataGenHelper {
         }
         String entryValue = evaluateEntry(dataSet, dataSetsAlreadyGeneratedRowsFor, columnName, rotateList.get(indexToPick), previousRow);
         rotateLogger.debug("entry value for index ("+indexToPick+") ("+entryValue+")");
+        rotateLogger.debug("\n\n\n===end-pickNextStringFromList===");
         return entryValue;
     }
 
@@ -203,71 +214,95 @@ public class DataGenHelper {
         }
     }
 
+    private static Logger numberLogger = LogManager.getLogger("numberLogger");
+
     public static Number generateNumber(String columnName, HashMap format, HashMap row, HashMap previousRow) throws Exception {
+        numberLogger.debug("columnName ("+columnName+")");
+        numberLogger.debug("format ("+format+")");
+        numberLogger.debug("row ("+row+")");
+        numberLogger.debug("previousRow ("+previousRow+")");
+
         if (doesNumberDependOnPreviousRow(format, row) && previousRow != null) {
-            logger.debug("number depends on previous row");
+            numberLogger.debug("number depends on previous row");
             Number number = (Number)previousRow.get(columnName);
             if (number == null) {
                 throw new Exception("number doesnt exist for previous row");
             }
+            numberLogger.debug("number ("+number+")");
+
             double spacing = Double.parseDouble((String)MetaDataHelper.getColumnFormatParameterValue("spacingFromPreviousRow",format, row));
+            numberLogger.debug("spacing ("+spacing+")");
+
             boolean randomSpacing = Boolean.parseBoolean((String)MetaDataHelper.getColumnFormatParameterValue("randomSpacing",format, row));
+            numberLogger.debug("randomSpacing ("+randomSpacing+")");
+
             String increment = (String)MetaDataHelper.getColumnFormatParameterValue("applySpacingWithIncrement",format, row);
+            numberLogger.debug("increment ("+increment+")");
             
             double rangeStart = -1.09090;
             Object rangeStartObj = MetaDataHelper.getColumnFormatParameterValue("rangeStart",format, row);
             if (rangeStartObj != null) {
                 rangeStart = Double.parseDouble((String)rangeStartObj);
             }
+            numberLogger.debug("rangeStart ("+rangeStart+")");
 
             double rangeEnd = -1.09090;
             Object rangeEndObj = MetaDataHelper.getColumnFormatParameterValue("rangeEnd",format, row);
             if (rangeEndObj != null) {
                 rangeEnd = Double.parseDouble((String)rangeEndObj);
             }
+            numberLogger.debug("rangeEnd ("+rangeEnd+")");
 
             int digitsAfterDecimal = 0;
             Object digitsAfterDecimalObject = MetaDataHelper.getColumnFormatParameterValue("digitsAfterDecimal",format, row);            
             if (digitsAfterDecimalObject != null) {
                 digitsAfterDecimal = Integer.parseInt((String)digitsAfterDecimalObject);
             }
+            numberLogger.debug("digitsAfterDecimal ("+digitsAfterDecimal+")");
 
             double genenratedNumber = generateNumberWithSpacing(number.doubleValue(), spacing, randomSpacing, increment, rangeStart, rangeEnd);
             
-            logger.debug("genenratedNumber =>"+genenratedNumber);
-            logger.debug("digitsAfterDecimalObject => "+digitsAfterDecimalObject);
+            numberLogger.debug("genenratedNumber =>"+genenratedNumber);
+            numberLogger.debug("digitsAfterDecimalObject => "+digitsAfterDecimalObject);
+
             if (digitsAfterDecimalObject != null) {
-                logger.debug("digitsAfterDecimal => "+digitsAfterDecimal);
+                numberLogger.debug("digitsAfterDecimal => "+digitsAfterDecimal);
                 if (digitsAfterDecimal == 0) {
                     return (int)genenratedNumber;
                 }
                 else {
-                    logger.debug("rounding...");
+                    numberLogger.debug("rounding...");
                     return CommonHelper.round(genenratedNumber, digitsAfterDecimal);
                 }
             }
             return genenratedNumber;
         } else {
-            logger.debug("number does not depend on previous row");
+            numberLogger.debug("number does not depend on previous row");
             if(isNumberRangeBased(format, row)) {
-                logger.debug("number is range based");
+                numberLogger.debug("number is range based");
+
                 double rangeStart = Double.parseDouble((String)MetaDataHelper.getColumnFormatParameterValue("rangeStart",format, row));
+                numberLogger.debug("rangeStart ("+rangeStart+")");
+
                 double rangeEnd = Double.parseDouble((String)MetaDataHelper.getColumnFormatParameterValue("rangeEnd",format, row));
+                numberLogger.debug("rangeEnd ("+rangeEnd+")");
+
                 double genenratedNumber = generateRandomNumber(rangeStart, rangeEnd);
-                logger.debug("genenratedNumber =>"+genenratedNumber);
+                numberLogger.debug("genenratedNumber =>"+genenratedNumber);
+
                 int digitsAfterDecimal = 0;
                 Object digitsAfterDecimalObject = MetaDataHelper.getColumnFormatParameterValue("digitsAfterDecimal",format, row);            
                 if (digitsAfterDecimalObject != null) {
                     digitsAfterDecimal = Integer.parseInt((String)digitsAfterDecimalObject);
                 }
-                logger.debug("digitsAfterDecimalObject => "+digitsAfterDecimalObject);
+                numberLogger.debug("digitsAfterDecimalObject => "+digitsAfterDecimalObject);
                 if (digitsAfterDecimalObject != null) {
-                    logger.debug("digitsAfterDecimal => "+digitsAfterDecimal);
+                    numberLogger.debug("digitsAfterDecimal => "+digitsAfterDecimal);
                     if (digitsAfterDecimal == 0) {
                         return (int)genenratedNumber;
                     }
                     else {
-                        logger.debug("rounding...");
+                        numberLogger.debug("rounding...");
                         return CommonHelper.round(genenratedNumber, digitsAfterDecimal);
                     }
                 }
@@ -275,11 +310,11 @@ public class DataGenHelper {
                 return genenratedNumber;
             }
             if (isNumberSynthetic(format, row)) {
-                logger.debug("number is synthetic");
+                numberLogger.debug("number is synthetic");
                 int digitsBeforeDecimal = Integer.parseInt((String)MetaDataHelper.getColumnFormatParameterValue("digitsBeforeDecimal",format, row));
                 int digitsAfterDecimal = Integer.parseInt((String)MetaDataHelper.getColumnFormatParameterValue("digitsAfterDecimal",format, row));
                 double genenratedNumber = generateRandomNumber(digitsBeforeDecimal, digitsAfterDecimal);
-                logger.debug("genenratedNumber =>"+genenratedNumber);
+                numberLogger.debug("genenratedNumber =>"+genenratedNumber);
                 if (digitsAfterDecimal == 0) {
                     return (int)genenratedNumber; 
                 }
@@ -652,11 +687,15 @@ public class DataGenHelper {
     }
 
     public static HashMap enrichForeignKeyValuesByAddingMissingValuesFromAllParents(DataSet dataSetUnderProcess, ArrayList<String> dataSetsAlreadyGeneratedRowsFor, HashMap incomingForeignKeyValues, HashMap rowUnderConstruction) throws Exception {
-        enrichLogger.debug("=========== enrich foreign key ==========");
+        enrichLogger.debug("\n\n\n=========== enrich foreign key ==========");
         enrichLogger.debug("dataSetUnderProcess => "+dataSetUnderProcess);
         enrichLogger.debug("incomingForeignKeyValues => "+incomingForeignKeyValues);
         enrichLogger.debug("rowUnderConstruction => "+rowUnderConstruction);
         enrichLogger.debug("dataSetsAlreadyGeneratedRowsFor => "+dataSetsAlreadyGeneratedRowsFor);
+
+        if (incomingForeignKeyValues == null) {
+            incomingForeignKeyValues = new HashMap();
+        }
 
         ArrayList<HashMap> parentRowsForTheGivenRow = getRowParents(rowUnderConstruction);
         enrichLogger.debug("parentRowsForTheGivenRow => "+parentRowsForTheGivenRow);
@@ -665,7 +704,12 @@ public class DataGenHelper {
         enrichLogger.debug("missingParents => "+missingParents);
 
         for (DataSet missingParent : missingParents) {
-            if (!dataSetsAlreadyGeneratedRowsFor.contains(missingParent.getName())) {
+            boolean generateMissingParentAgain = false;
+            if (missingParent.getGeneratedRows() == null 
+                    || missingParent.getGeneratedRows().size() == 0) {
+                generateMissingParentAgain = true;
+            }
+            if (!dataSetsAlreadyGeneratedRowsFor.contains(missingParent.getName()) && generateMissingParentAgain) {
                 enrichLogger.debug("missing parent ("+missingParent.getName()+") is not yet generated... generating now");
                 
                 // first generate missing parent before moving forward
@@ -688,7 +732,7 @@ public class DataGenHelper {
                 enrichLogger.debug("missing parent ("+missingParent.getName()+") generated fully");
             }
             ArrayList<HashMap> matchingRows = selectRowsMatchingWithPossiblyRelatedRows(missingParent, parentRowsForTheGivenRow);
-            enrichLogger.debug("matchingRows => "+matchingRows);
+            //enrichLogger.debug("matchingRows => "+matchingRows);
 
             HashMap randomRow = selectRandomRow(matchingRows);
             enrichLogger.debug("randomRow => "+randomRow);

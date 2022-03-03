@@ -204,6 +204,11 @@ public class DataSet implements Comparable <DataSet> {
     }
     
     public ArrayList<String> generateRow(ArrayList<String> dataSetsAlreadyGeneratedRowsFor, HashMap parentRow, HashMap foreignKeyValues) throws Exception {
+
+        generateRowLogger.debug("dataSetsAlreadyGeneratedRowsFor => "+dataSetsAlreadyGeneratedRowsFor);
+        generateRowLogger.debug("parentRow => "+parentRow);
+        generateRowLogger.debug("foreignKeyValues => "+foreignKeyValues);
+
         HashMap row = new LinkedHashMap();
         row.put("@dataset",this.getName());
         if (parentRow != null) {
@@ -220,23 +225,29 @@ public class DataSet implements Comparable <DataSet> {
             //dataSetsAlreadyGeneratedRowsFor = (ArrayList)dataSetsAlreadyGeneratedRowsFor.clone();
         }
 
-        if (foreignKeyValues != null) {
-            foreignKeyValues = DataGenHelper.enrichForeignKeyValuesByAddingMissingValuesFromAllParents(this, dataSetsAlreadyGeneratedRowsFor, foreignKeyValues, row);
-        }
+        //if (foreignKeyValues != null) {
+        foreignKeyValues = DataGenHelper.enrichForeignKeyValuesByAddingMissingValuesFromAllParents(this, dataSetsAlreadyGeneratedRowsFor, foreignKeyValues, row);
+        //}
         
         if (!dataSetsAlreadyGeneratedRowsFor.contains(this.getName()) || (foreignKeyValues != null && foreignKeyValues.keySet().size() > 0)) { 
             ArrayList<String> columnNames = this.getColumns();
             for (String columnName : columnNames) {
+                generateRowLogger.debug("\n===processing columnName ==="+this.getName()+"."+columnName);
                 if (foreignKeyValues != null) {
                     if (foreignKeyValues.keySet().contains(columnName) 
                         && (this.getDataFormat(columnName) == null 
                         || this.getDataFormat(columnName).keySet().size() == 0)) {
                         row.put(columnName, foreignKeyValues.get(columnName));
+                        generateRowLogger.debug("foreign key value set");
                         continue;
                     }
                 }
                 String dataType = this.getDataType(columnName);
                 HashMap format = this.getDataFormat(columnName);
+                
+                generateRowLogger.debug("dataType ("+dataType+")");
+                generateRowLogger.debug("format ("+format+")");
+
                 if (format == null) {
                     throw new Exception("format cannot be null for column ("+this.getName()+"."+columnName+")");
                 }
@@ -268,22 +279,22 @@ public class DataSet implements Comparable <DataSet> {
                         } else {
                             // check if the value is not already generated for this column (being PK)
                             if (!this.isValueAlreadyPresentInPrimaryKey(columnName, columnValue)) {
-                                logger.debug("value not present in primary key from before");
+                                generateRowLogger.debug("value not present in primary key from before");
                                 isValueGeneratedCorrecly = true;
                                 break;
                             }
                             else {
-                                logger.debug("value is present in primary key from before");
+                                generateRowLogger.debug("value is present in primary key from before");
                             }
                         }
                         tryGeneratingUniqueValueCount++;
                     }
-                    logger.debug("isColumnPrimaryKey("+columnName+") => "+isColumnPrimaryKey(columnName));
-                    logger.debug("isValueGeneratedCorrecly => "+isValueGeneratedCorrecly);
+                    generateRowLogger.debug("isColumnPrimaryKey("+columnName+") => "+isColumnPrimaryKey(columnName));
+                    generateRowLogger.debug("isValueGeneratedCorrecly => "+isValueGeneratedCorrecly);
                     if (this.isColumnPrimaryKey(columnName) && !isValueGeneratedCorrecly) {
-                        logger.debug("columnValue => "+columnValue);
-                        logger.debug("generatedRows => "+generatedRows);
-                        logger.error("unique value could not be generated for column ("+this.getName()+"."+columnName+")");
+                        generateRowLogger.debug("columnValue => "+columnValue);
+                        generateRowLogger.debug("generatedRows => "+generatedRows);
+                        generateRowLogger.error("unique value could not be generated for column ("+this.getName()+"."+columnName+")");
                         throw new Exception("unique value could not be generated for column ("+this.getName()+"."+columnName+")");
                     }
                     row.put(columnName, columnValue);
@@ -296,7 +307,7 @@ public class DataSet implements Comparable <DataSet> {
             }
 
             // all columns are generated for this row
-            logger.debug("generatedRow => "+row);
+            generateRowLogger.debug("generatedRow => "+row);
 
             dataSetsAlreadyGeneratedRowsFor.add(this.getName());
             ArrayList<String> foreignKeys = this.getForeignKeys();
@@ -310,9 +321,18 @@ public class DataSet implements Comparable <DataSet> {
 
             ArrayList<DataSet> relatedDataSets = this.getRelatedDataSets();
             for (DataSet relatedDataSet : relatedDataSets) {
-                logger.debug("relatedDataSet => "+relatedDataSet.getName());
-                if (dataSetsAlreadyGeneratedRowsFor.contains(relatedDataSet.getName())) {
-                    logger.debug("relatedDataSet ("+relatedDataSet+") is already genrated... no need to generate again ");
+                generateRowLogger.debug("relatedDataSet => "+relatedDataSet.getName());
+
+                boolean generateRelatedSet = true;
+                if (relatedDataSet.getGeneratedRows() != null 
+                        && relatedDataSet.getGeneratedRows().size() == relatedDataSet.howManyRowsToGenerate()) {
+                            generateRelatedSet = false;
+                }
+                generateRowLogger.debug("generateRelatedSet => "+generateRelatedSet);
+                generateRowLogger.debug("dataSetsAlreadyGeneratedRowsFor.contains(relatedDataSet.getName()) => "+dataSetsAlreadyGeneratedRowsFor.contains(relatedDataSet.getName()));
+
+                if (dataSetsAlreadyGeneratedRowsFor.contains(relatedDataSet.getName()) || !generateRelatedSet) {
+                    generateRowLogger.debug("relatedDataSet ("+relatedDataSet+") is already genrated... no need to generate again ");
                     continue;
                 }
                 String relationshipType = this.getRelationshipType(relatedDataSet);
@@ -320,8 +340,8 @@ public class DataSet implements Comparable <DataSet> {
                 String thisColumn = getSpecificRelationParameter(relatedDataSet, "thisColumn");
                 String relatedColumn = getSpecificRelationParameter(relatedDataSet, "relatedColumn");
 
-                logger.debug("thisColumn => "+thisColumn);
-                logger.debug("relatedColumn => "+relatedColumn);
+                generateRowLogger.debug("thisColumn => "+thisColumn);
+                generateRowLogger.debug("relatedColumn => "+relatedColumn);
 
                 if (relatedColumn == null) {
                     throw new Exception("related column ("+relatedColumn+") configuration missing for related data set ("+this.getName()+")");
@@ -382,12 +402,12 @@ public class DataSet implements Comparable <DataSet> {
                     } else {
                         throw new Exception("dataset ("+this.getName()+") has unrecognized relationship type ("+relationshipType+") for related data set ("+relatedDataSet.getName()+")");
                     }
-                    logger.debug("======== from ("+this.getName()+") generating multiple for ("+relatedDataSet.getName()+") ====");
-                    logger.debug("multiplicity => "+multiplicity);
+                    generateRowLogger.debug("======== from ("+this.getName()+") generating multiple for ("+relatedDataSet.getName()+") ====");
+                    generateRowLogger.debug("multiplicity => "+multiplicity);
                     for (int i = 0 ; i < multiplicity ; i++) {
-                        logger.debug("======== multiplicity iteration ("+(i+1)+") for ("+relatedDataSet.getName()+") ====");
-                        logger.debug("dataSetsAlreadyGeneratedRowsFor => "+dataSetsAlreadyGeneratedRowsFor);
-                        logger.debug("foreignKeyValues => "+foreignKeyValues);
+                        generateRowLogger.debug("======== multiplicity iteration ("+(i+1)+") for ("+relatedDataSet.getName()+") ====");
+                        generateRowLogger.debug("dataSetsAlreadyGeneratedRowsFor => "+dataSetsAlreadyGeneratedRowsFor);
+                        generateRowLogger.debug("foreignKeyValues => "+foreignKeyValues);
                         relatedDataSet.generateRow(dataSetsAlreadyGeneratedRowsFor, row, foreignKeyValues);
                     }
                 }
@@ -399,8 +419,8 @@ public class DataSet implements Comparable <DataSet> {
             //return row;
         }
         else {
-            logger.debug("dataSetsAlreadyGeneratedRowsFor => "+dataSetsAlreadyGeneratedRowsFor);
-            logger.debug("already generated for ("+this.getName()+") so ignored");
+            generateRowLogger.debug("dataSetsAlreadyGeneratedRowsFor => "+dataSetsAlreadyGeneratedRowsFor);
+            generateRowLogger.debug("already generated for ("+this.getName()+") so ignored");
         }
         return dataSetsAlreadyGeneratedRowsFor;
     }
@@ -414,7 +434,7 @@ public class DataSet implements Comparable <DataSet> {
     public ArrayList<String> generateRows(ArrayList<String> avoidGenerationOfTheseDataSets) throws Exception {
         ArrayList<String> toReturn = new ArrayList();
         long rowsToGenerate = this.howManyRowsToGenerate();
-        generateRowLogger.debug("\n\n\n===============generateRows() for ("+this.getName()+")=========");
+        generateRowLogger.debug("\n\n\n===============generatteRows() for ("+this.getName()+")=========");
         generateRowLogger.debug("rowsToGenerate => "+rowsToGenerate);
         generateRowLogger.debug("avoidGenerationOfTheseDataSets => "+avoidGenerationOfTheseDataSets);
 

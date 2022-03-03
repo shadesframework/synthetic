@@ -156,6 +156,7 @@ public class MetaDataHelper {
         return null;
     }
 
+    private static Logger expressionEvalLogger = LogManager.getLogger("expressionEvalLogger");
     public static Object evaluateExpression(String expression, Object context) throws Exception {
         if (context == null) {
             throw new Exception("context cannot be null");
@@ -168,6 +169,7 @@ public class MetaDataHelper {
         //evalcontext.addPropertyAccessor(new MapAccessor());    
         Expression exp = parser.parseExpression(expression);
         Object eval  = exp.getValue(evalcontext);
+        expressionEvalLogger.debug("expression ("+expression+") context ("+context+") eval("+eval+")");
         return eval;
     }
 }
