@@ -15,7 +15,12 @@ public class CommonHelper {
     private static Logger logger = LogManager.getLogger(CommonHelper.class);
     public static boolean isCollectionOfType(Collection collection, String type) {
         for (Object o : collection) {
-            if (!o.getClass().getName().equals(type)) {
+            logger.debug("o.getClass().getName() => "+o.getClass().getName());
+            if (type.trim().equals("java.lang.Number")) {
+                if (!Number.class.isAssignableFrom(o.getClass())) {
+                    return false;
+                }
+            } else if (!o.getClass().getName().equals(type)) {
                 return false;
             }
         }

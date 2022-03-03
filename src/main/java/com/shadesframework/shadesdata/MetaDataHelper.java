@@ -135,6 +135,10 @@ public class MetaDataHelper {
                     logger.debug("collection is of type string");
                     return value;
                 }
+                if (CommonHelper.isCollectionOfType((Collection)value, "java.lang.Number")) {
+                    logger.debug("collection is of type number");
+                    return value;
+                }
                 for (Map map : ((Collection<Map>)value)) {
                     String expression = ((HashMap<String, String>)map).get("expression");
                     Object expressionValue = evaluateExpression(expression, row);

@@ -205,6 +205,15 @@ public class DataGenHelper {
         }
     }
 
+    private static boolean isNumberRandomPick(HashMap format, HashMap row) throws Exception {
+        Object randomPick = MetaDataHelper.getColumnFormatParameterValue("randomPick",format, row);
+        if (randomPick == null) {
+            return false;
+        } else {
+            return true;
+        }
+    }
+
     private static boolean isNumberSynthetic(HashMap format, HashMap row) throws Exception {
         Object digitsBeforeDecimal = MetaDataHelper.getColumnFormatParameterValue("digitsBeforeDecimal",format, row);
         if (digitsBeforeDecimal == null) {
@@ -320,8 +329,17 @@ public class DataGenHelper {
                 }
                 return genenratedNumber;
             }
+            if (isNumberRandomPick(format, row)) {
+                Object randomPick = MetaDataHelper.getColumnFormatParameterValue("randomPick",format, row);
+                return pickRandomNumberFromList((ArrayList<Number>)randomPick);
+            }
         }
         throw new Exception("don't know how to generate number for column ("+columnName+")");
+    }
+
+    private static Number pickRandomNumberFromList(ArrayList<Number> numberList) throws Exception {
+        int randomIndex = ThreadLocalRandom.current().nextInt(0, numberList.size());
+        return numberList.get(randomIndex);
     }
 
     private static double generateNumberWithSpacing(double originalNumber, double spacing, 
