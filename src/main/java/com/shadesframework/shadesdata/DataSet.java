@@ -263,7 +263,7 @@ public class DataSet implements Comparable <DataSet> {
                 if (dataType != null) {
                     while (tryGeneratingUniqueValueCount < 3) {
                         if (dataType.toLowerCase().trim().equals("number")) {
-                            columnValue = DataGenHelper.generateNumber(columnName,format, row, previousRow);
+                            columnValue = DataGenHelper.generateNumber(this, dataSetsAlreadyGeneratedRowsFor, columnName,format, row, previousRow);
                         }
                         else if (dataType.toLowerCase().trim().equals("string")) {
                             columnValue = DataGenHelper.generateString(this, dataSetsAlreadyGeneratedRowsFor, columnName, format, row, previousRow);

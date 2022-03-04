@@ -1,10 +1,13 @@
 package com.shadesframework.shadesdata;
 import com.mifmif.common.regex.Generex;
+import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -63,7 +66,8 @@ public class DataGenHelper {
             return entryValue;
         }
         
-        String previousRowString = (String)previousRow.get(columnName);
+        rotateLogger.debug("previousRowStringObj ("+previousRow.get(columnName)+")");
+        Object previousRowString = previousRow.get(columnName);
         rotateLogger.debug("previousRowString ("+previousRowString+")");
         
         int indexToPick = 0;
@@ -83,12 +87,12 @@ public class DataGenHelper {
         return entryValue;
     }
 
-    private static int findStringinListOfEntries(ArrayList rotateList, String stringToFind, DataSet dataSet, String columnName, HashMap previousRow, ArrayList<String> dataSetsAlreadyGeneratedRowsFor) throws Exception {
+    private static int findStringinListOfEntries(ArrayList rotateList, Object stringToFind, DataSet dataSet, String columnName, HashMap previousRow, ArrayList<String> dataSetsAlreadyGeneratedRowsFor) throws Exception {
         int i = 0;
         for (Object entry : rotateList) {
             String entryValue = evaluateEntry(dataSet, dataSetsAlreadyGeneratedRowsFor, columnName, entry, previousRow);
             if (stringToFind != null 
-                    && entryValue.trim().equals(stringToFind)) {
+                    && entryValue.trim().equals(stringToFind.toString())) {
                 return i;
             }
             i++;
@@ -99,6 +103,8 @@ public class DataGenHelper {
     private static String evaluateEntry(DataSet dataSet, ArrayList<String> dataSetsAlreadyGeneratedRowsFor, String columnName, Object entry, HashMap previousRow) throws Exception {
         if (entry instanceof String) {
             return (String)entry;
+        } else if (Number.class.isAssignableFrom(entry.getClass())) {
+            return entry.toString();
         } else if (entry instanceof HashMap) {
             return evaluateGrabber(dataSet, dataSetsAlreadyGeneratedRowsFor, columnName, (HashMap)entry, previousRow);
         }
@@ -179,10 +185,12 @@ public class DataGenHelper {
                 rotateLogger.debug("data set to query ("+dataSetToQuery.getName()+") generated fully");
 
         }
+        rotateLogger.debug("dataSetToQuery.rows => "+dataSetToQuery.getGeneratedRows());
         ArrayList<HashMap> queryResult = filterRows(dataSetToQuery, query);
         rotateLogger.debug("queryResult => "+queryResult);
         if (queryResult.size() > 0) {
-            return queryResult.get(0).get(keyToReturn).toString();
+            int randomIndex = ThreadLocalRandom.current().nextInt(0, queryResult.size());
+            return queryResult.get(randomIndex).get(keyToReturn).toString();
         }
         return null;
     }
@@ -223,9 +231,18 @@ public class DataGenHelper {
         }
     }
 
+    private static boolean isNumberRotational(HashMap format, HashMap row) throws Exception {
+        Object rotate = MetaDataHelper.getColumnFormatParameterValue("rotate",format, row);
+        if (rotate == null) {
+            return false;
+        } else {
+            return true;
+        }
+    }
+
     private static Logger numberLogger = LogManager.getLogger("numberLogger");
 
-    public static Number generateNumber(String columnName, HashMap format, HashMap row, HashMap previousRow) throws Exception {
+    public static Number generateNumber(DataSet dataSet, ArrayList<String> dataSetsAlreadyGeneratedRowsFor, String columnName, HashMap format, HashMap row, HashMap previousRow) throws Exception {
         numberLogger.debug("columnName ("+columnName+")");
         numberLogger.debug("format ("+format+")");
         numberLogger.debug("row ("+row+")");
@@ -332,6 +349,11 @@ public class DataGenHelper {
             if (isNumberRandomPick(format, row)) {
                 Object randomPick = MetaDataHelper.getColumnFormatParameterValue("randomPick",format, row);
                 return pickRandomNumberFromList((ArrayList<Number>)randomPick);
+            }
+            if (isNumberRotational(format, row)) {
+                Object rotateList = MetaDataHelper.getColumnFormatParameterValue("rotate",format, row);
+                Object numberString = pickNextStringFromList(dataSet, dataSetsAlreadyGeneratedRowsFor, (ArrayList)rotateList, columnName, previousRow);
+                return NumberFormat.getInstance().parse(numberString.toString()); 
             }
         }
         throw new Exception("don't know how to generate number for column ("+columnName+")");
@@ -623,7 +645,9 @@ public class DataGenHelper {
                 Object criteriaValue = criteria.get(key);
                 Object rowValue = row.get(key);
                 if (criteriaValue != null && rowValue != null) {
-                    if (!criteriaValue.equals(rowValue)) {
+                    Pattern p = Pattern.compile((String)criteriaValue.toString());
+                    Matcher m = p.matcher((String)rowValue.toString());
+                    if (!m.matches()) {
                         criteriaMatch = false;
                         break;
                     }
