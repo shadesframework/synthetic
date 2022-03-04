@@ -38,7 +38,21 @@ public class DbFileStorage implements Storage {
             String columnName = dataSet.getColumns().get(i);
             String columnType = dataSet.getDataType(columnName);
             if (columnType.trim().equals("number")) {
-                ddlCreateQuery += columnName+" int";
+                if (dataSet.getGeneratedRows().size() > 0) {
+                    String numberStr = dataSet.getGeneratedRows().get(0).get(columnName).toString();
+                    try {
+                        Integer.parseInt(numberStr);
+                        ddlCreateQuery += columnName+" int";
+                    } catch(Exception e) {
+                        try {
+                            Double.parseDouble(numberStr);
+                            ddlCreateQuery += columnName+" decimal(10,2)";
+                        } catch(Exception ee) {
+                            throw new Exception("data set ("+dataSet+") row ("+dataSet.getGeneratedRows().get(0)+") has unrecognizable number format ("+numberStr+")");   
+                        }
+                    }
+                }
+                
             } else if (columnType.trim().equals("string")) {
                 ddlCreateQuery += columnName+" varchar(255)";
             } else if (columnType.trim().equals("date")) {

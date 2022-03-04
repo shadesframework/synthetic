@@ -44,6 +44,7 @@ File <dataset1>.synth
                 "applySpacingWithIncrement" : "true", // if true, the spacing will always be applied with increment on previous row value, otherwise decrement. If this parameter is not specified then it could be either increment or decrement.
 
                 "randomPick" : [1, 4, 6] // pick the number at random
+                "rotate" : [2, 5, 9] // each row will pick next option
 
                 // **** for "string" data type, any one of below ***/
 
