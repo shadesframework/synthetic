@@ -241,7 +241,7 @@ public class DataSet implements Comparable <DataSet> {
         }
 
         //if (foreignKeyValues != null) {
-        foreignKeyValues = DataGenHelper.enrichForeignKeyValuesByAddingMissingValuesFromAllParents(this, dataSetsAlreadyGeneratedRowsFor, foreignKeyValues, row);
+        foreignKeyValues = DataGenHelper.enrichForeignKeyValuesByAddingMissingValuesFromAllParents(this, dataSetsAlreadyGeneratedRowsFor, foreignKeyValues, row, false);
         //}
         
         if (!dataSetsAlreadyGeneratedRowsFor.contains(this.getName()) || (foreignKeyValues != null && foreignKeyValues.keySet().size() > 0)) { 

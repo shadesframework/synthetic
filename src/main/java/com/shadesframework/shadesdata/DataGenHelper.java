@@ -730,15 +730,20 @@ public class DataGenHelper {
         return filterRows(dataSet, criteria);
     }
 
-    public static HashMap enrichForeignKeyValuesByAddingMissingValuesFromAllParents(DataSet dataSetUnderProcess, ArrayList<String> dataSetsAlreadyGeneratedRowsFor, HashMap incomingForeignKeyValues, HashMap rowUnderConstruction) throws Exception {
+    public static HashMap enrichForeignKeyValuesByAddingMissingValuesFromAllParents(DataSet dataSetUnderProcess, ArrayList<String> dataSetsAlreadyGeneratedRowsFor, HashMap incomingForeignKeyValues, HashMap rowUnderConstruction, boolean dontGenerateMissingParents) throws Exception {
         enrichLogger.debug("\n\n\n=========== enrich foreign key ==========");
         enrichLogger.debug("dataSetUnderProcess => "+dataSetUnderProcess);
         enrichLogger.debug("incomingForeignKeyValues => "+incomingForeignKeyValues);
         enrichLogger.debug("rowUnderConstruction => "+rowUnderConstruction);
         enrichLogger.debug("dataSetsAlreadyGeneratedRowsFor => "+dataSetsAlreadyGeneratedRowsFor);
+        enrichLogger.debug("dontGenerateMissingParents => "+dontGenerateMissingParents);
 
         if (incomingForeignKeyValues == null) {
             incomingForeignKeyValues = new HashMap();
+        }
+
+        if (dataSetsAlreadyGeneratedRowsFor == null) {
+            dataSetsAlreadyGeneratedRowsFor = new ArrayList();
         }
 
         ArrayList<HashMap> parentRowsForTheGivenRow = getRowParents(rowUnderConstruction);
@@ -751,7 +756,9 @@ public class DataGenHelper {
             boolean generateMissingParentAgain = false;
             if (missingParent.getGeneratedRows() == null 
                     || missingParent.getGeneratedRows().size() == 0) {
-                generateMissingParentAgain = true;
+                if (!dontGenerateMissingParents) {
+                    generateMissingParentAgain = true;
+                }
             }
             if (!dataSetsAlreadyGeneratedRowsFor.contains(missingParent.getName()) && generateMissingParentAgain) {
                 enrichLogger.debug("missing parent ("+missingParent.getName()+") is not yet generated... generating now");
@@ -808,6 +815,7 @@ public class DataGenHelper {
                 repeatedCombinations.put(columnName, (ArrayList)repeatFor);
             }
         }
+        ArrayList<String> repeatedColumnNames = new ArrayList(repeatedCombinations.keySet());
         repeatForColumnsLogger.debug("repeatedCombinations ("+repeatedCombinations+")");
 
         ArrayList<UniqueColumnValuesTuple> uniqueValueTuples = new ArrayList();
@@ -846,7 +854,7 @@ public class DataGenHelper {
 
                     if (combinationColumnNames.contains(columnName)) {
                         // this column needs to be created repeated rows for
-                        ArrayList<HashMap> repeatedRowsForGivenRow = createRepeatRowsWithCombinations(row,uniqueCombinations, columnName, combinationColumnNames, dataSet);
+                        ArrayList<HashMap> repeatedRowsForGivenRow = createRepeatRowsWithCombinations(row,uniqueCombinations, repeatedColumnNames, combinationColumnNames, dataSet);
                         repeatForColumnsLogger.debug("repeatedRowsForGivenRow ("+repeatedRowsForGivenRow+")");
                         repeatedRows.addAll(repeatedRowsForGivenRow);
                     }
@@ -861,7 +869,7 @@ public class DataGenHelper {
         
     }
 
-    private static ArrayList<HashMap> createRepeatRowsWithCombinations(HashMap baseRow, HashSet<HashMap> uniqueCombinations, String repeatedColumn, ArrayList<String> combinationColumnNames, DataSet dataSet) throws Exception {
+    private static ArrayList<HashMap> createRepeatRowsWithCombinations(HashMap baseRow, HashSet<HashMap> uniqueCombinations, ArrayList<String> repeatedColumnNames, ArrayList<String> combinationColumnNames, DataSet dataSet) throws Exception {
         repeatForColumnsLogger.debug("baseRow ("+baseRow+")");
         ArrayList<HashMap> toReturn = new ArrayList();
         for (HashMap<String, Object> uniqueCombination : uniqueCombinations) {
@@ -874,9 +882,12 @@ public class DataGenHelper {
                 for (String key : uniqueCombination.keySet()) {
                     cloneRow.put(key, uniqueCombination.get(key));
                 }
+                
+                synchronizeParentsWithRow(dataSet, cloneRow);
+
                 ArrayList<String> columnsNotToBeRegenerated = new ArrayList();
                 columnsNotToBeRegenerated.addAll(combinationColumnNames);
-                columnsNotToBeRegenerated.add(repeatedColumn);
+                columnsNotToBeRegenerated.addAll(repeatedColumnNames);
                 regenerateColumnsNotPartOfCombination(cloneRow, columnsNotToBeRegenerated, dataSet);
                 toReturn.add(cloneRow);   
             }
@@ -884,10 +895,61 @@ public class DataGenHelper {
         return toReturn;
     }
 
+    private static void removeParentRows(HashMap<String, Object> row) throws Exception {
+        HashMap<String, Object> tempClone = (HashMap)row.clone();
+        for (String key : tempClone.keySet()) {
+            if(key.trim().startsWith("@parent")) {
+                row.remove(key);
+            }
+        }
+    }
+
+    private static void synchronizeParentsWithRow(DataSet dataSet, HashMap<String, Object> row) throws Exception {
+        removeParentRows(row);
+
+        ArrayList<DataSet> missingParents = getMissingParents(dataSet, row);
+        repeatForColumnsLogger.debug("missingParents => "+missingParents);
+
+        for (DataSet missingParent : missingParents) {
+
+            repeatForColumnsLogger.debug("missingParent => "+missingParent);
+
+            String relatedColumnName = dataSet.getRelatedColumn(missingParent);
+            String thisColumnName = dataSet.getThisColumn(missingParent);
+            Object thisColumnValue = row.get(thisColumnName);
+
+            repeatForColumnsLogger.debug("relatedColumnName => "+relatedColumnName);
+            repeatForColumnsLogger.debug("thisColumnName => "+thisColumnName);
+            repeatForColumnsLogger.debug("thisColumnValue => "+thisColumnValue);
+
+            HashMap criteria = new HashMap();
+            criteria.put(relatedColumnName, thisColumnValue);
+
+            repeatForColumnsLogger.debug("criteria => "+criteria);
+
+            ArrayList<HashMap> matchingRows = filterRows(missingParent, criteria);
+            repeatForColumnsLogger.debug("matchingRows => "+matchingRows);
+
+            HashMap randomRow = selectRandomRow(matchingRows);
+            repeatForColumnsLogger.debug("randomRow => "+randomRow);
+
+            row.put("@parent-"+missingParent.getName(), randomRow);
+            
+        }
+    }
+
     private static HashMap regenerateColumnsNotPartOfCombination(HashMap<String, Object> row, ArrayList<String> columnsNotToBeRegenerated, DataSet dataSet) throws Exception {
+        
+        repeatForColumnsLogger.debug("\n\n==== regenerateColumnsNotPartOfCombination ====");
+        repeatForColumnsLogger.debug("row ("+row+")");
+        repeatForColumnsLogger.debug("columnsNotToBeRegenerated ("+columnsNotToBeRegenerated+")");
+
         for (String columnName : row.keySet()) {
             if (!columnsNotToBeRegenerated.contains(columnName) && !columnName.trim().startsWith("@")) {
                 // re-generate this column
+                
+                repeatForColumnsLogger.debug("regenerating columnName ("+columnName+")");
+
                 String dataType = dataSet.getDataType(columnName);
                 HashMap format = dataSet.getDataFormat(columnName);
                 
