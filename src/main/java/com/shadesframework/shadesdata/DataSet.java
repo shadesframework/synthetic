@@ -3,6 +3,7 @@ package com.shadesframework.shadesdata;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Set;
 import org.apache.logging.log4j.LogManager;
@@ -19,6 +20,8 @@ public class DataSet implements Comparable <DataSet> {
     private HashMap<String, String> storage;
 
     private HashMap<String, Object> generationContext = new HashMap();
+    private HashMap<String, HashSet> uniqueValuesPerColumn = new HashMap();
+    private boolean repeatedDataAdded = false;
 
     ArrayList<HashMap> intermediateRows = new ArrayList();
     ArrayList<HashMap> generatedRows = new ArrayList();
@@ -43,6 +46,18 @@ public class DataSet implements Comparable <DataSet> {
 
     public Metadata getMetaReader() {
         return this.metaDataReader;
+    }
+
+    public HashMap<String, HashSet> getUniqueValuesPerColumn() {
+        return this.uniqueValuesPerColumn;
+    }
+
+    public boolean isRepeatedDataAdded() {
+        return this.repeatedDataAdded;
+    }
+
+    public void setRepeatedDataAdded(boolean added) {
+        this.repeatedDataAdded = added;
     }
 
     public ArrayList<String> getColumns() throws Exception {
@@ -412,7 +427,9 @@ public class DataSet implements Comparable <DataSet> {
                     }
                 }
             }
-
+            // update uniqueValues per column
+            updateUniqueValues(uniqueValuesPerColumn, row);
+            // accumulate generated row
             generatedRows.add(row);
             // deposit this row as 'previousRow' before returning
             generationContext.put("previousRow", row);
@@ -467,6 +484,7 @@ public class DataSet implements Comparable <DataSet> {
             generateRowLogger.debug("toReturn => "+toReturn);
             generateRowLogger.debug("fullyDoneDataSets (end) => "+fullyDoneDataSets);
         }
+        DataGenHelper.processRepeatForColumns(this);
         return toReturn;
     }
 
@@ -475,7 +493,7 @@ public class DataSet implements Comparable <DataSet> {
         storageHelper.storeRows(this);
     }
 
-    private boolean isValueAlreadyPresentInPrimaryKey(String columnName, Object value) throws Exception {
+    public boolean isValueAlreadyPresentInPrimaryKey(String columnName, Object value) throws Exception {
         HashMap<String, ArrayList> generatedPrimaryKeys = (HashMap)this.generationContext.get("primaryKeys");
         if (generatedPrimaryKeys != null) {
             ArrayList primaryKeysForColumn = generatedPrimaryKeys.get(columnName);
@@ -487,7 +505,7 @@ public class DataSet implements Comparable <DataSet> {
         return false;
     }
 
-    private void submitPrimaryKeyForColumn(String columnName, Object value) throws Exception {
+    public void submitPrimaryKeyForColumn(String columnName, Object value) throws Exception {
         HashMap<String, ArrayList> generatedPrimaryKeys = (HashMap)this.generationContext.get("primaryKeys");
         if (generatedPrimaryKeys == null) {
             generatedPrimaryKeys = new HashMap();
@@ -499,6 +517,23 @@ public class DataSet implements Comparable <DataSet> {
             generatedPrimaryKeys.put(columnName, primaryKeysForColumn);
         }
         primaryKeysForColumn.add(value);
+    }
+
+    private void updateUniqueValues(HashMap<String, HashSet> uniqueValues, HashMap row) throws Exception {
+        if (uniqueValues == null) {
+            throw new Exception("uniqueValues cannot be passed as null");
+        }
+        if (row != null) {
+            for (Object columnName : row.keySet()) {
+                Object value = row.get(columnName);
+                HashSet uniqueValueSet = uniqueValues.get(columnName);
+                if (uniqueValueSet == null) {
+                    uniqueValueSet = new HashSet();
+                    uniqueValues.put((String)columnName, uniqueValueSet);
+                }
+                uniqueValueSet.add(value);
+            }
+        }
     }
 
     @Override

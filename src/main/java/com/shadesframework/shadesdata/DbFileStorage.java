@@ -74,7 +74,9 @@ public class DbFileStorage implements Storage {
     public void storeRows(DataSet dataSet) throws Exception {
         try {
             ArrayList<HashMap> rows = dataSet.getGeneratedRows();
-            rows = CommonHelper.selectRandomItemsNoRepeat(rows, dataSet.howManyRowsToGenerate());
+            if (!dataSet.isRepeatedDataAdded()) {
+                rows = CommonHelper.selectRandomItemsNoRepeat(rows, dataSet.howManyRowsToGenerate());
+            }
             
             for (HashMap row : rows) {
                 HashMap rowClone = (HashMap)row.clone();

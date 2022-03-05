@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<testsuite tests="1" failures="0" name="com.shadesframework.AppTest" time="1.37" errors="0" skipped="0">
+<testsuite tests="1" failures="0" name="com.shadesframework.AppTest" time="0.947" errors="0" skipped="0">
   <properties>
     <property name="java.runtime.name" value="OpenJDK Runtime Environment"/>
     <property name="sun.boot.library.path" value="/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.312.b07-1.amzn2.0.2.x86_64/jre/lib/amd64"/>
@@ -62,5 +62,5 @@
     <property name="sun.io.unicode.encoding" value="UnicodeLittle"/>
     <property name="sun.cpu.isalist" value=""/>
   </properties>
-  <testcase classname="com.shadesframework.AppTest" name="testFileMetaReader" time="1.37"/>
+  <testcase classname="com.shadesframework.AppTest" name="testCombinator" time="0.947"/>
 </testsuite>

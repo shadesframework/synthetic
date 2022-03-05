@@ -73,6 +73,9 @@ File <dataset1>.synth
                 "spacingType" : "days" // or week, month, etc
                 "randomSpacing" : "true", // the spacing above will be chosen at random between 0 and 4.
                 "applySpacingWithIncrement" : "true",
+
+                // *** for all data types **
+                "repeatFor" : ["<columnName1>","<columnName2>",...] // repeat this column value for each unique combination of specified columns
             },
             "isPrimaryKey" : // "true" or "false"(default),
             "isForeignKey" : // "true" or "false"(default)

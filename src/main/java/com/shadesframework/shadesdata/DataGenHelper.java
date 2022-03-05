@@ -5,6 +5,8 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -239,7 +241,7 @@ public class DataGenHelper {
             return true;
         }
     }
-
+    
     private static Logger numberLogger = LogManager.getLogger("numberLogger");
 
     public static Number generateNumber(DataSet dataSet, ArrayList<String> dataSetsAlreadyGeneratedRowsFor, String columnName, HashMap format, HashMap row, HashMap previousRow) throws Exception {
@@ -791,5 +793,247 @@ public class DataGenHelper {
         }
         enrichLogger.debug("enriched incomingForeignKeyValues => "+incomingForeignKeyValues);
         return incomingForeignKeyValues;
+    }
+
+    private static Logger repeatForColumnsLogger = LogManager.getLogger("repeatForColumnsLogger");
+    
+    public static void processRepeatForColumns(DataSet dataSet) throws Exception {
+        repeatForColumnsLogger.debug("\n\n\n=====processRepeatForColumns====");
+        repeatForColumnsLogger.debug("dataSet ("+dataSet+")");
+        HashMap<String, ArrayList> repeatedCombinations = new HashMap();
+        for (String columnName : dataSet.getColumns()) {
+            HashMap format = dataSet.getDataFormat(columnName);
+            Object repeatFor = MetaDataHelper.getColumnFormatParameterValue("repeatFor",format, null);
+            if (repeatFor != null) {
+                repeatedCombinations.put(columnName, (ArrayList)repeatFor);
+            }
+        }
+        repeatForColumnsLogger.debug("repeatedCombinations ("+repeatedCombinations+")");
+
+        ArrayList<UniqueColumnValuesTuple> uniqueValueTuples = new ArrayList();
+        ArrayList<String> combinationColumnNames = new ArrayList();
+
+        repeatForColumnsLogger.debug("dataSet.getUniqueValuesPerColumn() ("+dataSet.getUniqueValuesPerColumn()+")");
+
+        for (String columnName : repeatedCombinations.keySet()) {
+            ArrayList<String> repeatCombination = repeatedCombinations.get(columnName);
+            for (String combinationColumn : repeatCombination) {
+                HashSet uniqueValuesForColumn = dataSet.getUniqueValuesPerColumn().get(combinationColumn);
+                repeatForColumnsLogger.debug("combinationColumn ("+combinationColumn+") uniqueValuesForColumn ("+uniqueValuesForColumn+")");
+                UniqueColumnValuesTuple tuple = new UniqueColumnValuesTuple(combinationColumn, uniqueValuesForColumn);
+                uniqueValueTuples.add(tuple);
+                combinationColumnNames.add(combinationColumn);
+            }
+        }
+
+        repeatForColumnsLogger.debug("uniqueValueTuples ("+uniqueValueTuples+")");
+        repeatForColumnsLogger.debug("combinationColumnNames ("+combinationColumnNames+")");
+
+        HashSet<HashMap> uniqueCombinations = createCombinations(uniqueValueTuples, combinationColumnNames, null, null);
+
+        repeatForColumnsLogger.debug("uniqueCombinations ("+uniqueCombinations+")");
+
+        ArrayList<HashMap> repeatedRows = new ArrayList();
+        
+        if (uniqueCombinations.size() > 0) {
+            for (HashMap<String, Object> row : dataSet.getGeneratedRows()) {
+                repeatForColumnsLogger.debug("row ("+row+")");
+
+                for (String columnName : row.keySet()) {
+
+                    repeatForColumnsLogger.debug("columnName ("+columnName+")");
+                    repeatForColumnsLogger.debug("combinationColumnNames.contains(columnName) ("+combinationColumnNames.contains(columnName)+")");
+
+                    if (combinationColumnNames.contains(columnName)) {
+                        // this column needs to be created repeated rows for
+                        ArrayList<HashMap> repeatedRowsForGivenRow = createRepeatRowsWithCombinations(row,uniqueCombinations, columnName, combinationColumnNames, dataSet);
+                        repeatForColumnsLogger.debug("repeatedRowsForGivenRow ("+repeatedRowsForGivenRow+")");
+                        repeatedRows.addAll(repeatedRowsForGivenRow);
+                    }
+                }
+            }
+            repeatForColumnsLogger.debug("repeatedRows ("+repeatedRows+")");
+            if (repeatedRows.size() > 0) {
+                dataSet.getGeneratedRows().addAll(repeatedRows);
+                dataSet.setRepeatedDataAdded(true);
+            }
+        }
+        
+    }
+
+    private static ArrayList<HashMap> createRepeatRowsWithCombinations(HashMap baseRow, HashSet<HashMap> uniqueCombinations, String repeatedColumn, ArrayList<String> combinationColumnNames, DataSet dataSet) throws Exception {
+        repeatForColumnsLogger.debug("baseRow ("+baseRow+")");
+        ArrayList<HashMap> toReturn = new ArrayList();
+        for (HashMap<String, Object> uniqueCombination : uniqueCombinations) {
+
+            repeatForColumnsLogger.debug("uniqueCombination ("+uniqueCombination+")");
+            repeatForColumnsLogger.debug("isCombinationAlreadyPresent(baseRow, uniqueCombination) ("+isCombinationAlreadyPresent(baseRow, uniqueCombination)+")");
+
+            if (!isCombinationAlreadyPresent(baseRow, uniqueCombination)) {
+                HashMap cloneRow = (HashMap)baseRow.clone();
+                for (String key : uniqueCombination.keySet()) {
+                    cloneRow.put(key, uniqueCombination.get(key));
+                }
+                ArrayList<String> columnsNotToBeRegenerated = new ArrayList();
+                columnsNotToBeRegenerated.addAll(combinationColumnNames);
+                columnsNotToBeRegenerated.add(repeatedColumn);
+                regenerateColumnsNotPartOfCombination(cloneRow, columnsNotToBeRegenerated, dataSet);
+                toReturn.add(cloneRow);   
+            }
+        }
+        return toReturn;
+    }
+
+    private static HashMap regenerateColumnsNotPartOfCombination(HashMap<String, Object> row, ArrayList<String> columnsNotToBeRegenerated, DataSet dataSet) throws Exception {
+        for (String columnName : row.keySet()) {
+            if (!columnsNotToBeRegenerated.contains(columnName) && !columnName.trim().startsWith("@")) {
+                // re-generate this column
+                String dataType = dataSet.getDataType(columnName);
+                HashMap format = dataSet.getDataFormat(columnName);
+                
+                repeatForColumnsLogger.debug("dataType ("+dataType+")");
+                repeatForColumnsLogger.debug("format ("+format+")");
+
+                if (format == null) {
+                    throw new Exception("format cannot be null for column ("+dataSet.getName()+"."+columnName+")");
+                }
+                Object columnValue = null;
+                HashMap previousRow =null;
+
+                int tryGeneratingUniqueValueCount = 0;
+                boolean isValueGeneratedCorrecly = false;
+                if (dataType != null) {
+                    while (tryGeneratingUniqueValueCount < 3) {
+
+                        int uniqueIntegerForPrimaryKey = UUID.randomUUID().toString().hashCode();
+                        repeatForColumnsLogger.debug("uniqueIntegerForPrimaryKey ("+uniqueIntegerForPrimaryKey+")");
+
+                        if (dataType.toLowerCase().trim().equals("number")) {
+                            if (dataSet.isColumnPrimaryKey(columnName)) {
+                                columnValue = uniqueIntegerForPrimaryKey;
+                            } else {
+                                columnValue = DataGenHelper.generateNumber(dataSet, null, columnName,format, row, previousRow);
+                            }
+                        }
+                        else if (dataType.toLowerCase().trim().equals("string")) {
+                            if (dataSet.isColumnPrimaryKey(columnName)) {
+                                columnValue = ""+uniqueIntegerForPrimaryKey;
+                            } else {
+                                columnValue = DataGenHelper.generateString(dataSet, null, columnName, format, row, previousRow);
+                            }
+                        } 
+                        else if (dataType.toLowerCase().trim().equals("date")) {
+                            columnValue = DataGenHelper.generateDate(columnName, format, row, previousRow);
+                        } else {
+                            throw new Exception("unrecognized datatype ("+dataType+") specified for column ("+dataSet.getName()+"."+columnName+")");
+                        }
+                        if (!dataSet.isColumnPrimaryKey(columnName)) {
+                            isValueGeneratedCorrecly = true;
+                            break;
+                        } else {
+                            // check if the value is not already generated for this column (being PK)
+                            if (!dataSet.isValueAlreadyPresentInPrimaryKey(columnName, columnValue)) {
+                                repeatForColumnsLogger.debug("value not present in primary key from before");
+                                isValueGeneratedCorrecly = true;
+                                break;
+                            }
+                            else {
+                                repeatForColumnsLogger.debug("value is present in primary key from before");
+                            }
+                        }
+                        tryGeneratingUniqueValueCount++;
+                    }
+                    repeatForColumnsLogger.debug("isColumnPrimaryKey("+columnName+") => "+dataSet.isColumnPrimaryKey(columnName));
+                    repeatForColumnsLogger.debug("isValueGeneratedCorrecly => "+isValueGeneratedCorrecly);
+                    if (dataSet.isColumnPrimaryKey(columnName) && !isValueGeneratedCorrecly) {
+                        repeatForColumnsLogger.debug("columnValue => "+columnValue);
+                        //repeatForColumnsLogger.debug("generatedRows => "+generatedRows);
+                        repeatForColumnsLogger.error("unique value could not be generated for column ("+dataSet.getName()+"."+columnName+")");
+                         
+                        throw new Exception("unique value could not be generated for column ("+dataSet.getName()+"."+columnName+")");
+                    }
+                    row.put(columnName, columnValue);
+                    if (dataSet.isColumnPrimaryKey(columnName)) {
+                        dataSet.submitPrimaryKeyForColumn(columnName, columnValue);
+                    }
+                }  else {
+                    throw new Exception("dataType cannot be null for column ("+dataSet.getName()+"."+columnName+")");
+                }
+            }
+        }
+        return row;
+    }
+
+    private static boolean isCombinationAlreadyPresent(HashMap<String, Object> row, HashMap<String, Object> combination) throws Exception {
+        for (String key : combination.keySet()) {
+            Object rowValue = row.get(key);
+            Object combinationValue = combination.get(key);
+            if (!rowValue.equals(combinationValue)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    // this is given an array list of columns and their unique values
+    // eg, col1 : [1, 2], col2 : [A, B], ...
+    // it returns an array list of hashmap with unique combination of values
+    // [{col1 : 1, col2 : A},{col1 : 1, col2 : B},{col1 : 2, col2 : A},{col1 : 2, col2 : B}]
+    public static HashSet<HashMap> createCombinations(ArrayList<UniqueColumnValuesTuple> selectedCombinationColumns, ArrayList<String> combinationColumnNames, HashSet<HashMap> toReturn, HashMap combination) throws Exception {
+        repeatForColumnsLogger.debug("\n\n");
+        repeatForColumnsLogger.debug("selectedCombinationColumns ("+selectedCombinationColumns+")");
+        repeatForColumnsLogger.debug("combinationColumnNames ("+combinationColumnNames+")");
+        repeatForColumnsLogger.debug("toReturn ("+toReturn+")");
+        repeatForColumnsLogger.debug("combination ("+combination+")");
+
+        if (toReturn == null) {
+            toReturn = new HashSet();
+        }
+        if (selectedCombinationColumns.size() > 0) {
+            UniqueColumnValuesTuple uniqueValues = selectedCombinationColumns.get(0);
+            if (selectedCombinationColumns.size() > 1) {
+                selectedCombinationColumns = new ArrayList(selectedCombinationColumns.subList(1, selectedCombinationColumns.size()));
+            } else {
+                selectedCombinationColumns = new ArrayList();
+            }
+            
+            repeatForColumnsLogger.debug("selected uniqueValues ("+uniqueValues+")");
+            for (Object uniqueValue : uniqueValues.uniqueValues) {
+                repeatForColumnsLogger.debug("uniqueValue ("+uniqueValue+")");
+                repeatForColumnsLogger.debug("combination ("+combination+")");
+                if (combination == null) {
+                    combination = findNonCompleteCombination(toReturn, combinationColumnNames);
+                    repeatForColumnsLogger.debug("non complete combination ("+combination+")");
+                    if (combination == null) {
+                        combination = new HashMap();
+                    }
+                    repeatForColumnsLogger.debug("selected combination ("+combination+")");
+                }
+                combination.put(uniqueValues.columnName, uniqueValue);
+                repeatForColumnsLogger.debug("filled combination ("+combination+")");
+                repeatForColumnsLogger.debug("calling nested loop unique ("+uniqueValue+")...");
+                if (selectedCombinationColumns.size() > 0) {
+                    createCombinations(selectedCombinationColumns, combinationColumnNames, toReturn, combination);    
+                }
+                repeatForColumnsLogger.debug("nest call finished loop unique ("+uniqueValue+")....");
+                toReturn.add(combination);
+                repeatForColumnsLogger.debug("toReturn (end loop) ("+toReturn+") loop unique ("+uniqueValue+")");
+                combination = (HashMap)combination.clone();
+            }
+        }
+        repeatForColumnsLogger.debug("toReturn (end function) ("+toReturn+")\n\n");
+        return toReturn;
+    }
+
+    // find the combination map from hashset that does not have all the keys in combination column maps
+    private static HashMap findNonCompleteCombination(HashSet<HashMap> combinations, ArrayList<String> combinationColumnNames) {
+        for (HashMap combination : combinations) {
+            for(String columnName : combinationColumnNames) {
+                if (!combination.keySet().contains(columnName)) {
+                    return combination;
+                }
+            }
+        }
+        return null;
     }
 }
