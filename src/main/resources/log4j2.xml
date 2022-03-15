@@ -23,7 +23,7 @@
         <Logger name="rotateLogger" level="INFO"/>
         <Logger name="numberLogger" level="INFO"/>
         <Logger name="expressionEvalLogger" level="INFO"/>
-        <Logger name="repeatForColumnsLogger" level="INFO"/>
+        <Logger name="repeatForColumnsLogger" level="DEBUG"/>
               
 
         <Root level="DEBUG">

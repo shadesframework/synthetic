@@ -37,7 +37,7 @@ public class DataGenHelper {
             return generatedString;
         }
 
-        throw new Exception("don't know how to generate string for column ("+columnName+")");
+        throw new Exception("don't know how to generate string for column ("+dataSet+"."+columnName+")");
     }
 
     private static String generateRandomString(String regExp) throws Exception {
@@ -857,9 +857,11 @@ public class DataGenHelper {
                         ArrayList<HashMap> repeatedRowsForGivenRow = createRepeatRowsWithCombinations(row,uniqueCombinations, repeatedColumnNames, combinationColumnNames, dataSet);
                         repeatForColumnsLogger.debug("repeatedRowsForGivenRow ("+repeatedRowsForGivenRow+")");
                         repeatedRows.addAll(repeatedRowsForGivenRow);
+                        break;
                     }
                 }
             }
+
             repeatForColumnsLogger.debug("repeatedRows ("+repeatedRows+")");
             if (repeatedRows.size() > 0) {
                 dataSet.getGeneratedRows().addAll(repeatedRows);
