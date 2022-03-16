@@ -32,6 +32,7 @@ public class DataGenHelper {
         }
 
         Object rotate = MetaDataHelper.getColumnFormatParameterValue("rotate",format, row);
+        rotateLogger.debug("rotate object ("+rotate+") format ("+format+") row ("+row+")");
         if (rotate != null) {
             generatedString = pickNextStringFromList(dataSet, dataSetsAlreadyGeneratedRowsFor, (ArrayList)rotate, columnName, previousRow);
             return generatedString;
