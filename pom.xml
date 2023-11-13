@@ -2,7 +2,7 @@
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <groupId>shadesframework</groupId>
-  <artifactId>shadesdata</artifactId>
+  <artifactId>synthetic</artifactId>
   <version>0.0.1-SNAPSHOT</version>
   <packaging>jar</packaging>
   <name>Shades Data Framework</name>
@@ -85,7 +85,7 @@
             <configuration>
               <transformers>
                 <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                  <mainClass>com.shadesframework.shadesdata.Synthetic</mainClass>
+                  <mainClass>com.shadesframework.synthetic.Synthetic</mainClass>
                 </transformer>
               </transformers>
               <filters>

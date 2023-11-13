@@ -1,5 +1,5 @@
-# shadesdata
-shadesdata is a synthetic data generation framework supporting relational data model.
+# synthetic
+'synthetic', as the name implies, is a synthetic data generation framework supporting relational data model.
 
 [["IT IS EXPERIMENTAL"]]
 
@@ -134,10 +134,10 @@ The configuration for this example is realized in the resources folder as files 
 you can build the maven project and run it as follows (with -examples switch)
 
 ```
-java -jar ./target/shadesdata-0.0.1-SNAPSHOT.jar -examples
-2022-03-01 07:53:37 [com.shadesframework.shadesdata.Synthetic.generate:45] INFO data set (product) generated and stored
-2022-03-01 07:53:37 [com.shadesframework.shadesdata.Synthetic.generate:45] INFO data set (customer) generated and stored
-2022-03-01 07:53:37 [com.shadesframework.shadesdata.Synthetic.generate:45] INFO data set (order) generated and stored
+java -jar ./target/synthetic-0.0.1-SNAPSHOT.jar -examples
+2022-03-01 07:53:37 [com.shadesframework.synthetic.Synthetic.generate:45] INFO data set (product) generated and stored
+2022-03-01 07:53:37 [com.shadesframework.synthetic.Synthetic.generate:45] INFO data set (customer) generated and stored
+2022-03-01 07:53:37 [com.shadesframework.synthetic.Synthetic.generate:45] INFO data set (order) generated and stored
 ```
 
 The datasets will be generated in the location pointed to by 'storage.pointer' property of each entity synth file.

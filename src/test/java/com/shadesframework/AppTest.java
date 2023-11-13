@@ -1,9 +1,5 @@
 package com.shadesframework;
 
-import com.shadesframework.shadesdata.DataGenHelper;
-import com.shadesframework.shadesdata.FileHelper;
-import com.shadesframework.shadesdata.FileMetadata;
-import com.shadesframework.shadesdata.UniqueColumnValuesTuple;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -11,6 +7,12 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.regex.Pattern;
 import org.junit.Test;
+
+import com.shadesframework.synthetic.DataGenHelper;
+import com.shadesframework.synthetic.FileHelper;
+import com.shadesframework.synthetic.FileMetadata;
+import com.shadesframework.synthetic.UniqueColumnValuesTuple;
+
 import static org.junit.Assert.assertTrue;
 
 

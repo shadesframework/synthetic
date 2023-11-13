@@ -1,12 +1,12 @@
-/home/ec2-user/shadesdata/src/main/java/com/shadesframework/shadesdata/CommonHelper.java
-/home/ec2-user/shadesdata/src/main/java/com/shadesframework/shadesdata/UniqueColumnValuesTuple.java
-/home/ec2-user/shadesdata/src/main/java/com/shadesframework/shadesdata/FileHelper.java
-/home/ec2-user/shadesdata/src/main/java/com/shadesframework/shadesdata/FileMetadata.java
-/home/ec2-user/shadesdata/src/main/java/com/shadesframework/shadesdata/DataSet.java
-/home/ec2-user/shadesdata/src/main/java/com/shadesframework/shadesdata/DataGenHelper.java
-/home/ec2-user/shadesdata/src/main/java/com/shadesframework/shadesdata/CsvFileStorage.java
-/home/ec2-user/shadesdata/src/main/java/com/shadesframework/shadesdata/DbFileStorage.java
-/home/ec2-user/shadesdata/src/main/java/com/shadesframework/shadesdata/Metadata.java
-/home/ec2-user/shadesdata/src/main/java/com/shadesframework/shadesdata/Synthetic.java
-/home/ec2-user/shadesdata/src/main/java/com/shadesframework/shadesdata/Storage.java
-/home/ec2-user/shadesdata/src/main/java/com/shadesframework/shadesdata/MetaDataHelper.java
+G:\My Drive\code\shadesframework\synthetic\src\main\java\com\shadesframework\synthetic\DataGenHelper.java
+G:\My Drive\code\shadesframework\synthetic\src\main\java\com\shadesframework\synthetic\DbFileStorage.java
+G:\My Drive\code\shadesframework\synthetic\src\main\java\com\shadesframework\synthetic\FileMetadata.java
+G:\My Drive\code\shadesframework\synthetic\src\main\java\com\shadesframework\synthetic\DataSet.java
+G:\My Drive\code\shadesframework\synthetic\src\main\java\com\shadesframework\synthetic\Synthetic.java
+G:\My Drive\code\shadesframework\synthetic\src\main\java\com\shadesframework\synthetic\Metadata.java
+G:\My Drive\code\shadesframework\synthetic\src\main\java\com\shadesframework\synthetic\UniqueColumnValuesTuple.java
+G:\My Drive\code\shadesframework\synthetic\src\main\java\com\shadesframework\synthetic\CsvFileStorage.java
+G:\My Drive\code\shadesframework\synthetic\src\main\java\com\shadesframework\synthetic\CommonHelper.java
+G:\My Drive\code\shadesframework\synthetic\src\main\java\com\shadesframework\synthetic\MetaDataHelper.java
+G:\My Drive\code\shadesframework\synthetic\src\main\java\com\shadesframework\synthetic\FileHelper.java
+G:\My Drive\code\shadesframework\synthetic\src\main\java\com\shadesframework\synthetic\Storage.java
