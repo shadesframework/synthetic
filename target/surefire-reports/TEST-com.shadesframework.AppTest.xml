@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report-3.0.xsd" version="3.0" name="com.shadesframework.AppTest" time="0.455" tests="1" errors="0" skipped="0" failures="0">
+<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report-3.0.xsd" version="3.0" name="com.shadesframework.AppTest" time="0.457" tests="1" errors="0" skipped="0" failures="0">
   <properties>
     <property name="java.specification.version" value="17"/>
     <property name="sun.cpu.isalist" value="amd64"/>
@@ -15,7 +15,7 @@
     <property name="sun.java.launcher" value="SUN_STANDARD"/>
     <property name="user.country" value="IN"/>
     <property name="sun.boot.library.path" value="C:\Users\Anusheel\.p2\pool\plugins\org.eclipse.justj.openjdk.hotspot.jre.full.win32.x86_64_17.0.9.v20231028-0858\jre\bin"/>
-    <property name="sun.java.command" value="C:\Users\Anusheel\AppData\Local\Temp\surefire3397015458758442849\surefirebooter-20231113181824225_3.jar C:\Users\Anusheel\AppData\Local\Temp\surefire3397015458758442849 2023-11-13T18-18-23_612-jvmRun1 surefire-20231113181824225_1tmp surefire_0-20231113181824225_2tmp"/>
+    <property name="sun.java.command" value="C:\Users\Anusheel\AppData\Local\Temp\surefire516802538718125423\surefirebooter-20231114153854434_3.jar C:\Users\Anusheel\AppData\Local\Temp\surefire516802538718125423 2023-11-14T15-38-54_294-jvmRun1 surefire-20231114153854434_1tmp surefire_0-20231114153854434_2tmp"/>
     <property name="jdk.debug" value="release"/>
     <property name="surefire.test.class.path" value="G:\My Drive\code\shadesframework\synthetic\target\test-classes;G:\My Drive\code\shadesframework\synthetic\target\classes;C:\Users\Anusheel\.m2\repository\org\apache\logging\log4j\log4j-api\2.6.1\log4j-api-2.6.1.jar;C:\Users\Anusheel\.m2\repository\com\microsoft\sqlserver\mssql-jdbc\10.2.0.jre8\mssql-jdbc-10.2.0.jre8.jar;C:\Users\Anusheel\.m2\repository\com\h2database\h2\2.1.210\h2-2.1.210.jar;C:\Users\Anusheel\.m2\repository\org\apache\logging\log4j\log4j-core\2.6.1\log4j-core-2.6.1.jar;C:\Users\Anusheel\.m2\repository\junit\junit\4.11\junit-4.11.jar;C:\Users\Anusheel\.m2\repository\org\hamcrest\hamcrest-core\1.3\hamcrest-core-1.3.jar;C:\Users\Anusheel\.m2\repository\com\github\mifmif\generex\1.0.2\generex-1.0.2.jar;C:\Users\Anusheel\.m2\repository\dk\brics\automaton\automaton\1.11-8\automaton-1.11-8.jar;C:\Users\Anusheel\.m2\repository\org\springframework\spring-expression\5.3.16\spring-expression-5.3.16.jar;C:\Users\Anusheel\.m2\repository\org\springframework\spring-core\5.3.16\spring-core-5.3.16.jar;C:\Users\Anusheel\.m2\repository\org\springframework\spring-jcl\5.3.16\spring-jcl-5.3.16.jar;C:\Users\Anusheel\.m2\repository\com\fasterxml\jackson\core\jackson-databind\2.9.8\jackson-databind-2.9.8.jar;C:\Users\Anusheel\.m2\repository\com\fasterxml\jackson\core\jackson-annotations\2.9.0\jackson-annotations-2.9.0.jar;C:\Users\Anusheel\.m2\repository\com\fasterxml\jackson\core\jackson-core\2.9.8\jackson-core-2.9.8.jar;C:\Users\Anusheel\.m2\repository\com\lmax\disruptor\3.3.4\disruptor-3.3.4.jar;"/>
     <property name="sun.cpu.endian" value="little"/>
@@ -30,7 +30,7 @@
     <property name="line.separator" value="&#10;"/>
     <property name="java.vm.specification.vendor" value="Oracle Corporation"/>
     <property name="java.specification.name" value="Java Platform API Specification"/>
-    <property name="surefire.real.class.path" value="C:\Users\Anusheel\AppData\Local\Temp\surefire3397015458758442849\surefirebooter-20231113181824225_3.jar"/>
+    <property name="surefire.real.class.path" value="C:\Users\Anusheel\AppData\Local\Temp\surefire516802538718125423\surefirebooter-20231114153854434_3.jar"/>
     <property name="user.script" value=""/>
     <property name="sun.management.compiler" value="HotSpot 64-Bit Tiered Compilers"/>
     <property name="java.runtime.version" value="17.0.9+9"/>
@@ -50,15 +50,15 @@
     <property name="java.vm.specification.name" value="Java Virtual Machine Specification"/>
     <property name="sun.os.patch.level" value=""/>
     <property name="native.encoding" value="Cp1252"/>
-    <property name="java.library.path" value="C:\Users\Anusheel\.p2\pool\plugins\org.eclipse.justj.openjdk.hotspot.jre.full.win32.x86_64_17.0.9.v20231028-0858\jre\bin;C:\Windows\Sun\Java\bin;C:\Windows\system32;C:\Windows;C:/Users/Anusheel/.p2/pool/plugins/org.eclipse.justj.openjdk.hotspot.jre.full.win32.x86_64_17.0.9.v20231028-0858/jre/bin/server;C:/Users/Anusheel/.p2/pool/plugins/org.eclipse.justj.openjdk.hotspot.jre.full.win32.x86_64_17.0.9.v20231028-0858/jre/bin;C:\Program Files\Microsoft\jdk-21.0.1.12-hotspot\bin;C:\Python311\Scripts\;C:\Python311\;C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem;C:\Windows\System32\WindowsPowerShell\v1.0\;C:\Windows\System32\OpenSSH\;C:\Program Files\nodejs\;C:\ProgramData\chocolatey\bin;G:\My Drive\software\Git\cmd;G:\My Drive\software\apache-maven-3.9.5\bin;C:\Users\Anusheel\AppData\Local\Microsoft\WindowsApps;C:\Users\Anusheel\AppData\Roaming\npm;C:\Users\Anusheel\AppData\Local\Programs\Microsoft VS Code\bin;C:\Users\Anusheel\OneDrive\Desktop;;."/>
+    <property name="java.library.path" value="C:\Users\Anusheel\.p2\pool\plugins\org.eclipse.justj.openjdk.hotspot.jre.full.win32.x86_64_17.0.9.v20231028-0858\jre\bin;C:\Windows\Sun\Java\bin;C:\Windows\system32;C:\Windows;C:/Users/Anusheel/.p2/pool/plugins/org.eclipse.justj.openjdk.hotspot.jre.full.win32.x86_64_17.0.9.v20231028-0858/jre/bin/server;C:/Users/Anusheel/.p2/pool/plugins/org.eclipse.justj.openjdk.hotspot.jre.full.win32.x86_64_17.0.9.v20231028-0858/jre/bin;C:\Program Files\Microsoft\jdk-21.0.1.12-hotspot\bin;C:\Python311\Scripts\;C:\Python311\;C:\Windows\system32;C:\Windows;C:\Windows\System32\Wbem;C:\Windows\System32\WindowsPowerShell\v1.0\;C:\Windows\System32\OpenSSH\;C:\Program Files\nodejs\;C:\ProgramData\chocolatey\bin;G:\My Drive\software\Git\cmd;G:\My Drive\software\apache-maven-3.9.5\bin;C:\Users\Anusheel\AppData\Local\Microsoft\WindowsApps;C:\Users\Anusheel\AppData\Roaming\npm;C:\Users\Anusheel\AppData\Local\Programs\Microsoft VS Code\bin;C:\Windows\system32;;."/>
     <property name="java.vm.info" value="mixed mode"/>
     <property name="java.vendor" value="Eclipse Adoptium"/>
     <property name="java.vm.version" value="17.0.9+9"/>
     <property name="sun.io.unicode.encoding" value="UnicodeLittle"/>
     <property name="java.class.version" value="61.0"/>
   </properties>
-  <testcase name="testCombinator" classname="com.shadesframework.AppTest" time="0.412">
-    <system-out><![CDATA[2023-11-13 18:18:25,028 main INFO sun.reflect.Reflection.getCallerClass is not supported. ReflectionUtil.getCallerClass will be much slower due to this. java.lang.ClassNotFoundException: sun.reflect.Reflection
+  <testcase name="testCombinator" classname="com.shadesframework.AppTest" time="0.414">
+    <system-out><![CDATA[2023-11-14 15:38:55,249 main INFO sun.reflect.Reflection.getCallerClass is not supported. ReflectionUtil.getCallerClass will be much slower due to this. java.lang.ClassNotFoundException: sun.reflect.Reflection
 	at java.base/jdk.internal.loader.BuiltinClassLoader.loadClass(BuiltinClassLoader.java:641)
 	at java.base/jdk.internal.loader.ClassLoaders$AppClassLoader.loadClass(ClassLoaders.java:188)
 	at java.base/java.lang.ClassLoader.loadClass(ClassLoader.java:525)
